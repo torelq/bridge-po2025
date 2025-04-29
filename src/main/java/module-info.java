@@ -5,4 +5,5 @@ module tcs.bridge {
 
     opens tcs.bridge.controller to javafx.fxml;
     exports tcs.bridge.app;
+    exports tcs.bridge.model;
 }
