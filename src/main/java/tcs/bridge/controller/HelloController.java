@@ -1,4 +1,4 @@
-package tcs.bridge;
+package tcs.bridge.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;

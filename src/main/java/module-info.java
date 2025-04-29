@@ -3,6 +3,6 @@ module tcs.bridge {
     requires javafx.fxml;
 
 
-    opens tcs.bridge to javafx.fxml;
-    exports tcs.bridge;
+    opens tcs.bridge.controller to javafx.fxml;
+    exports tcs.bridge.app;
 }
