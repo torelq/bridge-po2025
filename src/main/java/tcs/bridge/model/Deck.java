@@ -24,5 +24,15 @@ public class Deck {
         Collections.shuffle(cards, new java.util.Random());
     }
 
+    public List<Hand> deal() {
+        List<Hand> hands = new ArrayList<>();
+        int cardsPerPlayer = cards.size() / 4;
+        for (int i = 0; i < 4; i++) {
+            List<Card> handCards = new ArrayList<>(cards.subList(i * cardsPerPlayer, (i + 1) * cardsPerPlayer));
+            hands.add(new Hand(handCards));
+        }
+        return hands;
+    }
+
     
 }
