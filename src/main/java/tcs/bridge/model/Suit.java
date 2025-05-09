@@ -7,6 +7,7 @@ public enum Suit {
     SPADES("Spades");
 
     private final String name;
+    public static final Suit NO_TRUMP=null;
 
     Suit(String name) {
         this.name = name;
@@ -14,5 +15,10 @@ public enum Suit {
 
     public String getName() {
         return name;
+    }
+
+    public static String abbreviationOf(Suit suit) {
+        if (suit==NO_TRUMP) return "NT";
+        else return String.valueOf(suit.name.charAt(0));
     }
 }
