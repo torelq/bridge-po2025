@@ -80,6 +80,10 @@ public class Bidding {
         if (bid_history.isEmpty()) {
             if (bid.isSpecial() && !bid.isPass()) return false;
             bid_history.add(new SimpleEntry<>(position, bid));
+            if (!bid.isSpecial()) {
+                lastNumericalBid = bid;
+                lastNumericalBidPosition = position;
+            }
             return true;
         }
         if (Player.Position.next(bid_history.get(bid_history.size()-1).getKey())!=position) throw new IllegalArgumentException("Bidding out of order.");
@@ -102,7 +106,6 @@ public class Bidding {
                         bid_history.get(bid_history.size()-3).getValue().isPass()) {
                     makeFinished();
                 }
-                return true;
             } else {
                 if (lastNumericalBid==null) return false;
                 if (bid.isDouble()) {
@@ -116,8 +119,8 @@ public class Bidding {
                     lastNumericalBidRedoubled = true;
                     bid_history.add(new SimpleEntry<>(position, bid));
                 }
-                return true;
             }
+            return true;
         }
     }
 
@@ -132,7 +135,7 @@ public class Bidding {
         Player.Position declarer=null;
         for (SimpleEntry<Player.Position, Bid> entry : bid_history) {
             if (Player.Position.areTeammates(entry.getKey(), lastNumericalBidPosition)) {
-                if (entry.getValue().suit==lastNumericalBid.suit) {
+                if (!entry.getValue().isSpecial() && entry.getValue().suit==lastNumericalBid.suit) {
                     declarer = entry.getKey();
                     break;
                 }
