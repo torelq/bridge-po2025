@@ -113,5 +113,23 @@ class BiddingTest {
         assertFalse(bidding.makeBid(WEST, REDOUBLE_BID));
         bidding.makeBid(WEST, PASS_BID);
         assertTrue(bidding.decision());
+        assertEquals(new Contract(1, CLUBS, NORTH, 1), bidding.getContract());
     }
+
+    @Test
+    void redoublePartner() {
+        bidding.makeBid(NORTH, new Bid(1, CLUBS));
+        bidding.makeBid(EAST, DOUBLE_BID);
+        assertTrue(bidding.makeBid(SOUTH, REDOUBLE_BID));
+
+        assertFalse(bidding.makeBid(WEST, REDOUBLE_BID));
+        bidding.makeBid(WEST, PASS_BID);
+        assertFalse(bidding.makeBid(NORTH, REDOUBLE_BID));
+        bidding.makeBid(NORTH, PASS_BID);
+        assertFalse(bidding.makeBid(EAST, REDOUBLE_BID));
+        bidding.makeBid(EAST, PASS_BID);
+        assertEquals(new Contract(1, CLUBS, NORTH, 4), bidding.getContract());
+    }
+
+
 }
