@@ -102,4 +102,16 @@ class BiddingTest {
         bidding.makeBid(WEST, PASS_BID);
         assertEquals(new Contract(1, HEARTS, NORTH), bidding.getContract());
     }
+
+    @Test
+    void cannotRedoubleWithoutDouble() {
+        bidding.makeBid(NORTH, new Bid(1, CLUBS));
+        assertFalse(bidding.makeBid(EAST, REDOUBLE_BID));
+        bidding.makeBid(EAST, PASS_BID);
+        assertFalse(bidding.makeBid(SOUTH, REDOUBLE_BID));
+        bidding.makeBid(SOUTH, PASS_BID);
+        assertFalse(bidding.makeBid(WEST, REDOUBLE_BID));
+        bidding.makeBid(WEST, PASS_BID);
+        assertTrue(bidding.decision());
+    }
 }
