@@ -17,8 +17,15 @@ public class Bidding {
         private final Suit suit; // null if no trump
         private final int level;
         private final SpecialBid special;
+        public static final Bid PASS_BID = new Bid(0, null, SpecialBid.PASS);
+        public static final Bid DOUBLE_BID = new Bid(0, null, SpecialBid.DOUBLE);
+        public static final Bid REDOUBLE_BID = new Bid(0, null, SpecialBid.REDOUBLE);
 
-        public Bid(Suit suit, int level, SpecialBid special) {
+        public Bid(int level, Suit suit) {
+            this(level, suit, null);
+        }
+
+        public Bid(int level, Suit suit, SpecialBid special) {
             if ((level < 1 || level > 7) && special==null) {
                 throw new IllegalArgumentException("Level must be between 1 and 7");
             }
@@ -40,7 +47,7 @@ public class Bidding {
             if (this.level != other.level) {
                 return this.level > other.level;
             }
-            List<Suit> order = Arrays.asList(null, Suit.SPADES, Suit.HEARTS, Suit.DIAMONDS, Suit.CLUBS);
+            List<Suit> order = Arrays.asList(Suit.NO_TRUMP, Suit.SPADES, Suit.HEARTS, Suit.DIAMONDS, Suit.CLUBS);
             return order.indexOf(this.suit) < order.indexOf(other.suit);
         }
 
@@ -57,7 +64,7 @@ public class Bidding {
         }
 
         boolean isSpecial() {
-            return special==null;
+            return special!=null;
         }
     }
 
@@ -109,7 +116,7 @@ public class Bidding {
                     lastNumericalBidRedoubled = true;
                     bid_history.add(new SimpleEntry<>(position, bid));
                 }
-                throw new RuntimeException();
+                return true;
             }
         }
     }
