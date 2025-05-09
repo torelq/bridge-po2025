@@ -2,6 +2,7 @@ package tcs.bridge.model;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,28 +12,24 @@ import tcs.bridge.model.Player.Position;
 public class Game {
 
     public enum State {
+        PREGAME,
         BIDDING,
         PLAYING,
         FINISHED
     }
 
-    private State state = State.BIDDING;
+    private State state = State.PREGAME;
+    private Position dealer;
 
     /*  DEALING THE DECK */
-    private final Deck deck = new Deck().shuffle();
-    private final List<Hand> hands = deck.deal();
-    private final Map<Position, Player> players = Map.of(
-            Position.NORTH, new Player(Position.NORTH, hands.get(0)),
-            Position.EAST, new Player(Position.EAST, hands.get(1)),
-            Position.SOUTH, new Player(Position.SOUTH, hands.get(2)),
-            Position.WEST, new Player(Position.WEST, hands.get(3))
-    );
+    private Deck deck;
+    private final Map<Position, Player> players = new HashMap<>();
     /* ------------------------ */
 
     /*  BIDDING */
-    private final Bidding bidding = new Bidding();
+    private Bidding bidding = new Bidding();
     private Contract contract = null;
-    private Position turn = Position.NORTH;
+    private Position turn = null;
     /* ------------------------ */
 
     /*  PLAYING */
@@ -40,26 +37,74 @@ public class Game {
     private Trick currentTrick;
     /* ------------------------ */
 
+    public void joinGame(Player player) {
+        Position position = player.getPosition();
+        if (state != State.PREGAME) {
+            throw new IllegalStateException("Game is not in pregame state");
+        }
+        if (players.containsKey(position)) {
+            throw new IllegalArgumentException("Position already occupied");
+        }
+        if (players.isEmpty()) {
+            dealer = position; // first to join is dealer
+            turn = dealer; // first to join is dealer
+        }
+        players.put(position, player);
+        if (players.size() == 4) {
+            state = State.BIDDING;
+            deck = new Deck().shuffle();
+            List<Hand> hands = deck.deal();
+            players.get(Position.NORTH).setHand(hands.get(0));
+            players.get(Position.EAST).setHand(hands.get(1));
+            players.get(Position.SOUTH).setHand(hands.get(2));
+            players.get(Position.WEST).setHand(hands.get(3));
+        }
+    }
+
+    public void leaveGame(Player player) {
+        if (state != State.PREGAME) {
+            throw new IllegalStateException("Game is not in pregame state");
+        }
+        if (!players.containsKey(player.getPosition())) {
+            throw new IllegalArgumentException("Position not occupied");
+        }
+        players.remove(player.getPosition());
+    }
+
     public boolean makeBid(Bid bid) {
         if (state != State.BIDDING) {
             throw new IllegalStateException("Game is not in bidding state");
         }
         boolean ok = bidding.makeBid(players.get(turn).getPosition(), bid);
+        if (bidding.toRedeal()) {
+            deck = new Deck().shuffle();
+            List<Hand> hands = deck.deal();
+            players.get(Position.NORTH).setHand(hands.get(0));
+            players.get(Position.EAST).setHand(hands.get(1));
+            players.get(Position.SOUTH).setHand(hands.get(2));
+            players.get(Position.WEST).setHand(hands.get(3));
+            bidding = new Bidding();
+            turn = dealer;
+            return ok;
+        }
         if (bidding.decision()) {
             state = State.PLAYING;
             contract = bidding.getContract();
+            turn = Position.next(contract.declarer); // left from the declarer
+            currentTrick = new Trick(contract.trump);
         } else {
             turn = Position.next(turn);
         }
         return ok;
     }
 
-    public void playCard(Card card) {
+    public boolean playCard(Card card) {
         if (state != State.PLAYING) {
             throw new IllegalStateException("Game is not in playing state");
         }
         Player player = players.get(turn);
-        currentTrick.PlayCard(player, card);
+        boolean ok = currentTrick.PlayCard(player, card);
+        if (ok) turn = Position.next(turn);
         if (currentTrick.isComplete()) {
             completeTricks.add(currentTrick);
             turn = currentTrick.getWinner().getPosition();
@@ -69,6 +114,7 @@ public class Game {
                 currentTrick = new Trick(contract.trump);
             }
         }
+        return ok;
     }
 
     public SimpleEntry<Position, Position> getWinner() {
@@ -89,5 +135,21 @@ public class Game {
         } else {
             return new SimpleEntry<>(Position.next(dummy.getPosition()), Position.next(declarer.getPosition()));
         }
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public List<Trick> getCompleteTricks() {
+        return completeTricks;
+    }
+
+    public Deck getDeck() {
+        return deck;
+    }
+
+    public Trick getCurrentTrick() {
+        return currentTrick;
     }
 }

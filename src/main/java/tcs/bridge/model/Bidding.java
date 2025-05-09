@@ -154,6 +154,13 @@ public class Bidding {
         return contract;
     }
 
+    public boolean toRedeal() {
+        return bid_history.size() == 4 && bid_history.get(0).getValue().isPass() &&
+                bid_history.get(1).getValue().isPass() &&
+                bid_history.get(2).getValue().isPass() &&
+                bid_history.get(3).getValue().isPass();
+    }
+
     public List<SimpleEntry<Player.Position, Bid>> getBidHistory() {
         return bid_history;
     }
