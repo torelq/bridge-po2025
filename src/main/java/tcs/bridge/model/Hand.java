@@ -1,16 +1,25 @@
 package tcs.bridge.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Hand {
     private final List<Card> cards;
 
+    public Hand() {
+        this.cards = new ArrayList<>();
+    }
     public Hand(List<Card> cards) {
         this.cards = cards;
     }
 
     public List<Card> getCards() {
         return cards;
+    }
+
+    public void setCards(List<Card> cards) {
+        this.cards.clear();
+        this.cards.addAll(cards);
     }
 
     public void sort() {

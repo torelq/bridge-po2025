@@ -5,7 +5,15 @@ public class Player extends Hand {
         NORTH,
         EAST,
         SOUTH,
-        WEST
+        WEST;
+
+        public Position next(Position current) {
+            return Position.values()[(current.ordinal() + 1) % 4];
+        }
+
+        public Position teammate(Position current) {
+            return Position.values()[(current.ordinal() + 2) % 4];
+        }
     }
 
     private Position position;
@@ -19,15 +27,12 @@ public class Player extends Hand {
         this.position = position;
     }
 
+    public void setHand(Hand hand) {
+        this.setCards(hand.getCards());
+    }
+
     public Position getPosition() {
         return position;
     }
 
-    public Position next() {
-        return Position.values()[(position.ordinal() + 1) % 4];
-    }
-
-    public Position teammate() {
-        return Position.values()[(position.ordinal() + 2) % 4];
-    }
 }

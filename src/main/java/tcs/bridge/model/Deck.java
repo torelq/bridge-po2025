@@ -20,8 +20,9 @@ public class Deck {
         return cards;
     }
 
-    public void shuffle() {
+    public Deck shuffle() {
         Collections.shuffle(cards, new java.util.Random());
+        return this;
     }
 
     public List<Hand> deal() {
