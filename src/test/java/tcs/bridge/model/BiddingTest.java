@@ -122,14 +122,75 @@ class BiddingTest {
         bidding.makeBid(EAST, DOUBLE_BID);
         assertTrue(bidding.makeBid(SOUTH, REDOUBLE_BID));
 
+        assertFalse(bidding.makeBid(WEST, DOUBLE_BID));
         assertFalse(bidding.makeBid(WEST, REDOUBLE_BID));
         bidding.makeBid(WEST, PASS_BID);
+        assertFalse(bidding.makeBid(NORTH, DOUBLE_BID));
         assertFalse(bidding.makeBid(NORTH, REDOUBLE_BID));
         bidding.makeBid(NORTH, PASS_BID);
+        assertFalse(bidding.makeBid(EAST, DOUBLE_BID));
         assertFalse(bidding.makeBid(EAST, REDOUBLE_BID));
         bidding.makeBid(EAST, PASS_BID);
         assertEquals(new Contract(1, CLUBS, NORTH, 4), bidding.getContract());
     }
 
+    @Test
+    void redoubleBidder() {
+        bidding.makeBid(NORTH, new Bid(4, NO_TRUMP));
+        bidding.makeBid(EAST, DOUBLE_BID);
+        bidding.makeBid(SOUTH, PASS_BID);
+        bidding.makeBid(WEST, PASS_BID);
+        assertTrue(bidding.makeBid(NORTH, REDOUBLE_BID));
 
+        assertFalse(bidding.makeBid(EAST, DOUBLE_BID));
+        assertFalse(bidding.makeBid(EAST, REDOUBLE_BID));
+        bidding.makeBid(EAST, PASS_BID);
+        assertFalse(bidding.makeBid(SOUTH, DOUBLE_BID));
+        assertFalse(bidding.makeBid(SOUTH, REDOUBLE_BID));
+        bidding.makeBid(SOUTH, PASS_BID);
+        assertFalse(bidding.makeBid(WEST, DOUBLE_BID));
+        assertFalse(bidding.makeBid(WEST, REDOUBLE_BID));
+        bidding.makeBid(WEST, PASS_BID);
+        assertEquals(new Contract(4, NO_TRUMP, NORTH, 4), bidding.getContract());
+    }
+
+    @Test
+    void secondOpponentCannotRedouble() {
+        bidding.makeBid(NORTH, new Bid(4, NO_TRUMP));
+        bidding.makeBid(EAST, DOUBLE_BID);
+        bidding.makeBid(SOUTH, PASS_BID);
+        assertFalse(bidding.makeBid(WEST, REDOUBLE_BID));
+    }
+
+    @Test
+    void redoubleAfterDoubleBySecondOpponent() {
+        bidding.makeBid(NORTH, new Bid(4, NO_TRUMP));
+        bidding.makeBid(EAST, PASS_BID);
+        bidding.makeBid(SOUTH, PASS_BID);
+        bidding.makeBid(WEST, DOUBLE_BID);
+
+        assertTrue(bidding.makeBid(NORTH, REDOUBLE_BID));
+    }
+
+    @Test
+    void firstOpponentCannotRedouble() {
+        bidding.makeBid(NORTH, new Bid(4, NO_TRUMP));
+        bidding.makeBid(EAST, PASS_BID);
+        bidding.makeBid(SOUTH, PASS_BID);
+        bidding.makeBid(WEST, DOUBLE_BID);
+        bidding.makeBid(NORTH, PASS_BID);
+        assertFalse(bidding.makeBid(EAST, REDOUBLE_BID));
+    }
+
+    @Test
+    void higherBidResetsRedouble() {
+        bidding.makeBid(NORTH, new Bid(4, NO_TRUMP));
+        bidding.makeBid(EAST, DOUBLE_BID);
+        bidding.makeBid(SOUTH, REDOUBLE_BID);
+        assertTrue(bidding.makeBid(WEST, new Bid(5, NO_TRUMP)));
+        bidding.makeBid(NORTH, PASS_BID);
+        bidding.makeBid(EAST, PASS_BID);
+        bidding.makeBid(SOUTH, PASS_BID);
+        assertEquals(new Contract(5, NO_TRUMP, WEST, 1), bidding.getContract());
+    }
 }
