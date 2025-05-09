@@ -29,6 +29,11 @@ public class Player extends Hand {
 
     private Position position;
 
+    public Player(Position position) {
+        super();
+        this.position = position;
+    }
+    
     public Player(Position position, Hand hand) {
         super(hand.getCards());
         this.position = position;

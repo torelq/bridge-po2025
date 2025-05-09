@@ -5,13 +5,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TrickTest {
-    Deck deck = new Deck();
+    Deck deck = new Deck().shuffle();
 
     Player player1, player2, player3, player4;
 
     @BeforeEach
     void setUp() {
-        deck.shuffle();
         player1 = new Player(Player.Position.NORTH, deck.deal().get(0));
         player2 = new Player(Player.Position.EAST, deck.deal().get(1));
         player3 = new Player(Player.Position.SOUTH, deck.deal().get(2));

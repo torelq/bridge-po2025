@@ -20,18 +20,21 @@ public class Trick {
         return leadingSuit;
     }
 
-    public void PlayCard(Player player, Card card) {
+    public boolean PlayCard(Player player, Card card) {
         if (leadingSuit == null) {
             leadingSuit = card.getSuit();
-            player.play(card);
+            boolean ok = player.play(card);
+            if (ok) plays.put(player, card);
+            return ok;
         } else {
             if (card.getSuit() == leadingSuit || !player.hasSuit(leadingSuit)) {
-                player.play(card);
+                boolean ok = player.play(card);
+                if (ok) plays.put(player, card);
+                return ok;
             } else {
-                throw new IllegalArgumentException("Player must follow the leading suit: " + leadingSuit);
+                return false;
             }
         }
-        plays.put(player, card);
     }
 
     public boolean isComplete() {
