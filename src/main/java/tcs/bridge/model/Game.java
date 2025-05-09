@@ -31,6 +31,7 @@ public class Game {
 
     /*  BIDDING */
     private final Bidding bidding = new Bidding();
+    private Contract contract = null;
     private Position turn = Position.NORTH;
     /* ------------------------ */
 
@@ -43,12 +44,12 @@ public class Game {
         if (state != State.BIDDING) {
             throw new IllegalStateException("Game is not in bidding state");
         }
-        boolean ok = bidding.makeBid(players.get(turn), bid);
+        boolean ok = bidding.makeBid(players.get(turn).getPosition(), bid);
         if (bidding.decision()) {
             state = State.PLAYING;
-            turn = bidding.getDeclarer().getPosition();
+            contract = bidding.getContract();
         } else {
-            turn = turn.next(turn);
+            turn = Position.next(turn);
         }
         return ok;
     }
@@ -65,7 +66,7 @@ public class Game {
             if (completeTricks.size() == 13) {
                 state = State.FINISHED;
             } else {                
-                currentTrick = new Trick(bidding.getTrump());
+                currentTrick = new Trick(contract.trump);
             }
         }
     }
@@ -74,9 +75,9 @@ public class Game {
         if (state != State.FINISHED) {
             throw new IllegalStateException("Game is not finished");
         }
-        Player declarer = bidding.getDeclarer();
-        Player dummy = bidding.getDummy();
-        int goal = bidding.getLevel() + 6;
+        Player declarer = players.get(contract.declarer);
+        Player dummy = players.get(Position.teammate(contract.declarer));
+        int goal = contract.level + 6;
         int wonTricks = 0;
         for (Trick trick : completeTricks) {
             if (trick.getWinner() == declarer || trick.getWinner() == dummy) {
@@ -86,7 +87,7 @@ public class Game {
         if (wonTricks >= goal) {
             return new SimpleEntry<>(declarer.getPosition(), dummy.getPosition());
         } else {
-            return new SimpleEntry<>(dummy.getPosition().next(dummy.getPosition()), declarer.getPosition().next(declarer.getPosition()));
+            return new SimpleEntry<>(Position.next(dummy.getPosition()), Position.next(declarer.getPosition()));
         }
     }
 }

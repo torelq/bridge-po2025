@@ -15,4 +15,9 @@ public enum Suit {
     public String getName() {
         return name;
     }
+
+    public static String abbreviationOf(Suit suit) {
+        if (suit==null) return "NT";
+        else return String.valueOf(suit.name.charAt(0));
+    }
 }
