@@ -32,9 +32,11 @@ class BiddingTest {
     void sampleBidding() {
         assertTrue(bidding.makeBid(NORTH, PASS_BID));
         assertTrue(bidding.makeBid(EAST, new Bid(1, SPADES)));
+        assertFalse(bidding.makeBid(SOUTH, new Bid(1, SPADES)));
         assertTrue(bidding.makeBid(SOUTH, new Bid(1, NO_TRUMP)));
         assertFalse(bidding.makeBid(WEST, new Bid(1, HEARTS)));
         assertTrue(bidding.makeBid(WEST, new Bid(2, SPADES)));
+        assertFalse(bidding.makeBid(NORTH, new Bid(2, HEARTS)));
         assertTrue(bidding.makeBid(NORTH, PASS_BID));
         assertTrue(bidding.makeBid(EAST, PASS_BID));
         assertTrue(bidding.makeBid(SOUTH, PASS_BID));
