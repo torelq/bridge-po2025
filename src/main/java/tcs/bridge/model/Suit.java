@@ -1,9 +1,9 @@
 package tcs.bridge.model;
 
 public enum Suit {
-    HEARTS("Hearts"),
     DIAMONDS("Diamonds"),
     CLUBS("Clubs"),
+    HEARTS("Hearts"),
     SPADES("Spades");
 
     private final String name;
