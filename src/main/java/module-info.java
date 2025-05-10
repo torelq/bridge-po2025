@@ -1,6 +1,7 @@
 module tcs.bridge {
     requires javafx.controls;
     requires javafx.fxml;
+    requires java.desktop;
 
 
     opens tcs.bridge.controller to javafx.fxml;
