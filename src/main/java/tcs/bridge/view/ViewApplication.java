@@ -77,7 +77,6 @@ public class ViewApplication extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         //Instantiating the BorderPane class
-        Deck deck = new Deck();
         Scene scene = makeTable(game.getDeck().deal(), stage);
         stage.setTitle("Deck View");
         stage.setScene(scene);
