@@ -36,6 +36,7 @@ public class Game {
     private final List<Trick> completeTricks = new ArrayList<>();
     private Trick currentTrick;
     private int playedCards = 0;
+    private int wonTricks = 0;
     /* ------------------------ */
 
     public void joinGame(Player player) {
@@ -107,6 +108,10 @@ public class Game {
         boolean ok = currentTrick.PlayCard(player, card);
         if (ok) turn = Position.next(turn);
         if (currentTrick.isComplete()) {
+            if (currentTrick.getWinner() == players.get(contract.declarer)
+                    || currentTrick.getWinner() == players.get(Position.teammate(contract.declarer))) {
+                wonTricks++;
+            }
             completeTricks.add(currentTrick);
             turn = currentTrick.getWinner().getPosition();
             if (completeTricks.size() == 13) {
@@ -126,12 +131,7 @@ public class Game {
         Player declarer = players.get(contract.declarer);
         Player dummy = players.get(Position.teammate(contract.declarer));
         int goal = contract.level + 6;
-        int wonTricks = 0;
-        for (Trick trick : completeTricks) {
-            if (trick.getWinner() == declarer || trick.getWinner() == dummy) {
-                wonTricks++;
-            }
-        }
+
         if (wonTricks >= goal) {
             return new SimpleEntry<>(declarer.getPosition(), dummy.getPosition());
         } else {
@@ -161,5 +161,13 @@ public class Game {
 
     public int getNumberOfPlayedCards() {
         return playedCards;
+    }
+
+    public int getGainedTricks() {
+        return wonTricks;
+    }
+
+    public Contract getContract() {
+        return contract;
     }
 }
