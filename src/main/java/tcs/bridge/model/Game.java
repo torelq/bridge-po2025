@@ -152,4 +152,8 @@ public class Game {
     public Trick getCurrentTrick() {
         return currentTrick;
     }
+
+    public Position getCurrentTurn(){
+        return turn;
+    }
 }
