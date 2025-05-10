@@ -35,6 +35,7 @@ public class Game {
     /*  PLAYING */
     private final List<Trick> completeTricks = new ArrayList<>();
     private Trick currentTrick;
+    private int playedCards = 0;
     /* ------------------------ */
 
     public void joinGame(Player player) {
@@ -114,6 +115,7 @@ public class Game {
                 currentTrick = new Trick(contract.trump);
             }
         }
+        if (ok) ++playedCards;
         return ok;
     }
 
@@ -155,5 +157,9 @@ public class Game {
 
     public Position getCurrentTurn(){
         return turn;
+    }
+
+    public int getNumberOfPlayedCards() {
+        return playedCards;
     }
 }
