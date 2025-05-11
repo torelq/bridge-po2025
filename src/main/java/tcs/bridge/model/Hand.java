@@ -22,7 +22,7 @@ public class Hand {
         this.cards.addAll(cards);
     }
 
-    public void sort() {
+    public Hand sort() {
         cards.sort((card1, card2) -> {
             if (card1.getSuit() != card2.getSuit()) {
                 return card1.getSuit().compareTo(card2.getSuit());
@@ -30,6 +30,7 @@ public class Hand {
                 return card1.getRank().compareTo(card2.getRank());
             }
         });
+        return this;
     }
     
     /**

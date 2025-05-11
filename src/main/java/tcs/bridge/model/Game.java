@@ -56,10 +56,10 @@ public class Game {
             state = State.BIDDING;
             deck = new Deck().shuffle();
             List<Hand> hands = deck.deal();
-            players.get(Position.NORTH).setHand(hands.get(0));
-            players.get(Position.EAST).setHand(hands.get(1));
-            players.get(Position.SOUTH).setHand(hands.get(2));
-            players.get(Position.WEST).setHand(hands.get(3));
+            players.get(Position.NORTH).setHand(hands.get(0).sort());
+            players.get(Position.EAST).setHand(hands.get(1).sort());
+            players.get(Position.SOUTH).setHand(hands.get(2).sort());
+            players.get(Position.WEST).setHand(hands.get(3).sort());
         }
     }
 
@@ -81,10 +81,10 @@ public class Game {
         if (bidding.toRedeal()) {
             deck = new Deck().shuffle();
             List<Hand> hands = deck.deal();
-            players.get(Position.NORTH).setHand(hands.get(0));
-            players.get(Position.EAST).setHand(hands.get(1));
-            players.get(Position.SOUTH).setHand(hands.get(2));
-            players.get(Position.WEST).setHand(hands.get(3));
+            players.get(Position.NORTH).setHand(hands.get(0).sort());
+            players.get(Position.EAST).setHand(hands.get(1).sort());
+            players.get(Position.SOUTH).setHand(hands.get(2).sort());
+            players.get(Position.WEST).setHand(hands.get(3).sort());
             bidding = new Bidding();
             turn = dealer;
             return ok;
