@@ -23,10 +23,7 @@ class BiddingTest {
 
     @Test
     void onlyPassesFinish() {
-        assertThrows(RuntimeException.class, () -> testBid(bidding, NORTH, new Bid(1, HEARTS)));
-        bidding.setStartingPosition(EAST);
-        assertThrows(RuntimeException.class, () -> bidding.setStartingPosition(EAST));
-        assertEquals(EAST, bidding.getTurn());
+        assertNull(bidding.getTurn());
         assertTrue(testBid(bidding, EAST, PASS_BID));
         assertEquals(SOUTH, bidding.getTurn());
         assertTrue(testBid(bidding, SOUTH, PASS_BID));
@@ -43,8 +40,7 @@ class BiddingTest {
 
     @Test
     void sampleBidding() {
-        bidding.setStartingPosition(NORTH);
-        assertEquals(NORTH, bidding.getTurn());
+        assertNull(bidding.getTurn());
         assertTrue(testBid(bidding, NORTH, PASS_BID));
         assertEquals(EAST, bidding.getTurn());
         assertTrue(testBid(bidding, EAST, new Bid(1, SPADES)));
@@ -70,7 +66,6 @@ class BiddingTest {
 
     @Test
     void doubleFirstOpponent() {
-        bidding.setStartingPosition(NORTH);
         assertFalse(testBid(bidding, NORTH, DOUBLE_BID));
         assertTrue(testBid(bidding, NORTH, PASS_BID));
         assertFalse(testBid(bidding, EAST, DOUBLE_BID));
@@ -87,7 +82,6 @@ class BiddingTest {
 
     @Test
     void partnerCannotDouble() {
-        bidding.setStartingPosition(NORTH);
         testBid(bidding, NORTH, new Bid(1, HEARTS));
         testBid(bidding, EAST, PASS_BID);
         assertFalse(testBid(bidding, SOUTH, DOUBLE_BID));
@@ -95,7 +89,6 @@ class BiddingTest {
 
     @Test
     void doubleSecondOpponent() {
-        bidding.setStartingPosition(NORTH);
         testBid(bidding, NORTH, new Bid(7, DIAMONDS));
         testBid(bidding, EAST, PASS_BID);
         testBid(bidding, SOUTH, PASS_BID);
@@ -112,7 +105,6 @@ class BiddingTest {
 
     @Test
     void higherBidResetsDouble() {
-        bidding.setStartingPosition(NORTH);
         testBid(bidding, NORTH, new Bid(5, HEARTS));
         testBid(bidding, EAST, DOUBLE_BID);
         testBid(bidding, SOUTH, PASS_BID);
@@ -125,8 +117,7 @@ class BiddingTest {
 
     @Test
     void outOfOrderBidding() {
-        bidding.setStartingPosition(NORTH);
-        assertEquals(NORTH, bidding.getTurn());
+        assertEquals(null, bidding.getTurn());
         testBid(bidding, NORTH, new Bid(1, HEARTS));
         assertEquals(EAST, bidding.getTurn());
         assertThrows(IllegalArgumentException.class, () -> testBid(bidding, SOUTH, PASS_BID));
@@ -141,7 +132,6 @@ class BiddingTest {
 
     @Test
     void cannotRedoubleWithoutDouble() {
-        bidding.setStartingPosition(NORTH);
         testBid(bidding, NORTH, new Bid(1, CLUBS));
         assertFalse(testBid(bidding, EAST, REDOUBLE_BID));
         testBid(bidding, EAST, PASS_BID);
@@ -155,7 +145,6 @@ class BiddingTest {
 
     @Test
     void redoublePartner() {
-        bidding.setStartingPosition(NORTH);
         testBid(bidding, NORTH, new Bid(1, CLUBS));
         testBid(bidding, EAST, DOUBLE_BID);
         assertTrue(testBid(bidding, SOUTH, REDOUBLE_BID));
@@ -174,7 +163,6 @@ class BiddingTest {
 
     @Test
     void redoubleBidder() {
-        bidding.setStartingPosition(NORTH);
         testBid(bidding, NORTH, new Bid(4, NO_TRUMP));
         testBid(bidding, EAST, DOUBLE_BID);
         testBid(bidding, SOUTH, PASS_BID);
@@ -195,7 +183,6 @@ class BiddingTest {
 
     @Test
     void secondOpponentCannotRedouble() {
-        bidding.setStartingPosition(NORTH);
         testBid(bidding, NORTH, new Bid(4, NO_TRUMP));
         testBid(bidding, EAST, DOUBLE_BID);
         testBid(bidding, SOUTH, PASS_BID);
@@ -204,7 +191,6 @@ class BiddingTest {
 
     @Test
     void redoubleAfterDoubleBySecondOpponent() {
-        bidding.setStartingPosition(NORTH);
         testBid(bidding, NORTH, new Bid(4, NO_TRUMP));
         testBid(bidding, EAST, PASS_BID);
         testBid(bidding, SOUTH, PASS_BID);
@@ -215,7 +201,6 @@ class BiddingTest {
 
     @Test
     void firstOpponentCannotRedouble() {
-        bidding.setStartingPosition(NORTH);
         testBid(bidding, NORTH, new Bid(4, NO_TRUMP));
         testBid(bidding, EAST, PASS_BID);
         testBid(bidding, SOUTH, PASS_BID);
@@ -226,7 +211,6 @@ class BiddingTest {
 
     @Test
     void higherBidResetsRedouble() {
-        bidding.setStartingPosition(NORTH);
         testBid(bidding, NORTH, new Bid(4, NO_TRUMP));
         testBid(bidding, EAST, DOUBLE_BID);
         testBid(bidding, SOUTH, REDOUBLE_BID);

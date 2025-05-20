@@ -71,7 +71,6 @@ public class Bidding {
     }
 
     private final List<SimpleEntry<Player.Position, Bid>> bid_history = new ArrayList<>();
-    private Player.Position turn=null;
     private Player.Position lastNumericalBidPosition=null;
     private Bid lastNumericalBid=null;
     private boolean lastNumericalBidDoubled=false, lastNumericalBidRedoubled=false;
@@ -79,10 +78,7 @@ public class Bidding {
     private Contract contract=null; // null - four passes
 
     private boolean makeOrAttemptBid(Player.Position position, Bid bid, boolean placeTheBid) {
-        if (turn==null) throw new IllegalStateException("Starting position has not been initialized.");
         if (isFinished) throw new IllegalStateException("Cannot make bids on a finished Bidding object.");
-
-        if (position!=turn) throw new IllegalArgumentException("Bidding out of order.");
 
         if (bid_history.isEmpty()) {
             if (bid.isSpecial() && !bid.isPass()) return false;
@@ -92,10 +88,11 @@ public class Bidding {
                     lastNumericalBid = bid;
                     lastNumericalBidPosition = position;
                 }
-                turn = Player.Position.next(turn);
             }
             return true;
         }
+
+        if (Player.Position.next(bid_history.get(bid_history.size()-1).getKey())!=position) throw new IllegalArgumentException("Bidding out of order.");
 
         if (!bid.isSpecial()) {
             if (bid.isGreaterThan(lastNumericalBid)) {
@@ -105,7 +102,6 @@ public class Bidding {
                     lastNumericalBidDoubled = false;
                     lastNumericalBidRedoubled = false;
                     bid_history.add(new SimpleEntry<>(position, bid));
-                    turn = Player.Position.next(turn);
                 }
                 return true;
             }
@@ -114,7 +110,6 @@ public class Bidding {
             if (bid.isPass()) {
                 if (placeTheBid) {
                     bid_history.add(new SimpleEntry<>(position, bid));
-                    turn = Player.Position.next(turn);
                     if (bid_history.size()<4) return true;
                     if (bid_history.get(bid_history.size()-1).getValue().isPass() &&
                             bid_history.get(bid_history.size()-2).getValue().isPass() &&
@@ -130,7 +125,6 @@ public class Bidding {
                     if (placeTheBid) {
                         lastNumericalBidDoubled = true;
                         bid_history.add(new SimpleEntry<>(position, bid));
-                        turn = Player.Position.next(turn);
                     }
                 } else if (bid.isRedouble()) {
                     if (Player.Position.areOpponents(position, lastNumericalBidPosition)) return false;
@@ -138,7 +132,6 @@ public class Bidding {
                     if (placeTheBid) {
                         lastNumericalBidRedoubled = true;
                         bid_history.add(new SimpleEntry<>(position, bid));
-                        turn = Player.Position.next(turn);
                     }
                 }
             }
@@ -175,14 +168,10 @@ public class Bidding {
         contract = new Contract(lastNumericalBid.level, lastNumericalBid.suit, declarer, scoreMultiplier);
     }
 
-    public void setStartingPosition(Player.Position position) {
-        if (turn!=null) throw new IllegalStateException("Starting position has already been initialized.");
-        turn = position;
-    }
-
-    // can return null if starting position not set
+    // can return null if no bids have been made
     public Player.Position getTurn() {
-        return turn;
+        if (bid_history.isEmpty()) return null;
+        return Player.Position.next(bid_history.get(bid_history.size()-1).getKey());
     }
 
     public boolean decision() {
