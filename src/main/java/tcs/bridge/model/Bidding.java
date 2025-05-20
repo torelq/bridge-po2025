@@ -1,7 +1,5 @@
 package tcs.bridge.model;
 
-import javafx.geometry.Pos;
-
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
