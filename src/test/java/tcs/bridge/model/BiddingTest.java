@@ -26,9 +26,13 @@ class BiddingTest {
         assertThrows(RuntimeException.class, () -> testBid(bidding, NORTH, new Bid(1, HEARTS)));
         bidding.setStartingPosition(EAST);
         assertThrows(RuntimeException.class, () -> bidding.setStartingPosition(EAST));
+        assertEquals(EAST, bidding.getTurn());
         assertTrue(testBid(bidding, EAST, PASS_BID));
+        assertEquals(SOUTH, bidding.getTurn());
         assertTrue(testBid(bidding, SOUTH, PASS_BID));
+        assertEquals(WEST, bidding.getTurn());
         assertTrue(testBid(bidding, WEST, PASS_BID));
+        assertEquals(NORTH, bidding.getTurn());
         assertFalse(bidding.decision());
         assertThrows(RuntimeException.class, () -> bidding.getContract());
         assertTrue(testBid(bidding, NORTH, PASS_BID));
@@ -40,15 +44,25 @@ class BiddingTest {
     @Test
     void sampleBidding() {
         bidding.setStartingPosition(NORTH);
+        assertEquals(NORTH, bidding.getTurn());
         assertTrue(testBid(bidding, NORTH, PASS_BID));
+        assertEquals(EAST, bidding.getTurn());
         assertTrue(testBid(bidding, EAST, new Bid(1, SPADES)));
+        assertEquals(SOUTH, bidding.getTurn());
         assertFalse(testBid(bidding, SOUTH, new Bid(1, SPADES)));
+        assertEquals(SOUTH, bidding.getTurn());
         assertTrue(testBid(bidding, SOUTH, new Bid(1, NO_TRUMP)));
+        assertEquals(WEST, bidding.getTurn());
         assertFalse(testBid(bidding, WEST, new Bid(1, HEARTS)));
+        assertEquals(WEST, bidding.getTurn());
         assertTrue(testBid(bidding, WEST, new Bid(2, SPADES)));
+        assertEquals(NORTH, bidding.getTurn());
         assertFalse(testBid(bidding, NORTH, new Bid(2, HEARTS)));
+        assertEquals(NORTH, bidding.getTurn());
         assertTrue(testBid(bidding, NORTH, PASS_BID));
+        assertEquals(EAST, bidding.getTurn());
         assertTrue(testBid(bidding, EAST, PASS_BID));
+        assertEquals(SOUTH, bidding.getTurn());
         assertTrue(testBid(bidding, SOUTH, PASS_BID));
         assertTrue(bidding.decision());
         assertEquals(new Contract(2, SPADES, EAST), bidding.getContract());
@@ -112,10 +126,15 @@ class BiddingTest {
     @Test
     void outOfOrderBidding() {
         bidding.setStartingPosition(NORTH);
+        assertEquals(NORTH, bidding.getTurn());
         testBid(bidding, NORTH, new Bid(1, HEARTS));
+        assertEquals(EAST, bidding.getTurn());
         assertThrows(IllegalArgumentException.class, () -> testBid(bidding, SOUTH, PASS_BID));
+        assertEquals(EAST, bidding.getTurn());
         testBid(bidding, EAST, PASS_BID);
+        assertEquals(SOUTH, bidding.getTurn());
         testBid(bidding, SOUTH, PASS_BID);
+        assertEquals(WEST, bidding.getTurn());
         testBid(bidding, WEST, PASS_BID);
         assertEquals(new Contract(1, HEARTS, NORTH), bidding.getContract());
     }
