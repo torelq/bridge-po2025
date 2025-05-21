@@ -79,6 +79,41 @@ class GameTest {
     }
     
     @Test
+    void check_sorted_Hand() {
+        Game game = new Game();
+        game.joinGame(playerNorth);
+        game.joinGame(playerEast);
+        game.joinGame(playerSouth);
+        game.joinGame(playerWest);
+
+        Bid bid = new Bid(1, Suit.HEARTS);
+        Bid passBid = Bid.PASS_BID;
+        game.makeBid(bid);
+        game.makeBid(passBid);
+        game.makeBid(passBid);
+        game.makeBid(passBid);
+
+        assertEquals(Game.State.PLAYING, game.getState());
+        
+        List<Card> hand = playerNorth.getCards();
+        for (int i = 0; i < hand.size() - 1; i++) {
+            assertTrue(hand.get(i).compareTo(hand.get(i + 1)) <= 0, "Hand is not sorted");
+        }
+        hand = playerEast.getCards();
+        for (int i = 0; i < hand.size() - 1; i++) {
+            assertTrue(hand.get(i).compareTo(hand.get(i + 1)) <= 0, "Hand is not sorted");
+        }
+        hand = playerSouth.getCards();
+        for (int i = 0; i < hand.size() - 1; i++) {
+            assertTrue(hand.get(i).compareTo(hand.get(i + 1)) <= 0, "Hand is not sorted");
+        }
+        hand = playerWest.getCards();
+        for (int i = 0; i < hand.size() - 1; i++) {
+            assertTrue(hand.get(i).compareTo(hand.get(i + 1)) <= 0, "Hand is not sorted");
+        }
+    }
+
+    @Test
     void testMakeBidNotInBiddingState() {
         Game game = new Game();
         

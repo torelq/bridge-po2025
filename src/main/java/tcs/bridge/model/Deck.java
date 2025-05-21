@@ -30,7 +30,7 @@ public class Deck {
         int cardsPerPlayer = cards.size() / 4;
         for (int i = 0; i < 4; i++) {
             List<Card> handCards = new ArrayList<>(cards.subList(i * cardsPerPlayer, (i + 1) * cardsPerPlayer));
-            hands.add(new Hand(handCards));
+            hands.add(new Hand(handCards).sort());
         }
         return hands;
     }

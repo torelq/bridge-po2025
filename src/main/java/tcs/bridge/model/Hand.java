@@ -23,13 +23,7 @@ public class Hand {
     }
 
     public Hand sort() {
-        cards.sort((card1, card2) -> {
-            if (card1.getSuit() != card2.getSuit()) {
-                return card1.getSuit().compareTo(card2.getSuit());
-            } else {
-                return card1.getRank().compareTo(card2.getRank());
-            }
-        });
+        cards.sort(Card::compareTo);
         return this;
     }
     

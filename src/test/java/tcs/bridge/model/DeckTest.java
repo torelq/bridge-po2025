@@ -30,5 +30,5 @@ class DeckTest {
         List<Card> before = new ArrayList<>(deck.getCards());
         List<Card> after = new ArrayList<>(deck.shuffle().getCards());
         assertNotEquals(before, after, "Deck shuffled");
-    }    
+    }
 }

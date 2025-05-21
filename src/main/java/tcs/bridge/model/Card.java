@@ -1,6 +1,6 @@
 package tcs.bridge.model;
 
-public class Card {
+public class Card implements Comparable<Card> {
     private final Suit suit;
     private final Rank rank;
 
@@ -32,5 +32,14 @@ public class Card {
     @Override
     public String toString() {
         return rank + " of " + suit;
+    }
+
+    @Override
+    public int compareTo(Card other) {
+        if (this.suit != other.suit) {
+            return this.suit.compareTo(other.suit);
+        } else {
+            return this.rank.compareTo(other.rank);
+        }
     }
 }

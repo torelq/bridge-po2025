@@ -1,5 +1,9 @@
 package tcs.bridge.view;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -10,12 +14,12 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
-import tcs.bridge.model.*;
-
-
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
+import tcs.bridge.model.Bidding;
+import tcs.bridge.model.Card;
+import tcs.bridge.model.Game;
+import tcs.bridge.model.Hand;
+import tcs.bridge.model.Player;
+import tcs.bridge.model.Suit;
 
 public class ViewApplication extends Application {
     static Game game = new Game();
@@ -69,8 +73,6 @@ public class ViewApplication extends Application {
             player.setAlignment(Pos.CENTER);
             int translate = -283;
             List<Card> cards = deal.get(i).getCards();
-            cards.sort((c1, c2)->c1.getSuit().ordinal()*100 + c1.getRank().ordinal()
-                    - c2.getSuit().ordinal()*100 - c2.getRank().ordinal());
             for (Card card : cards) {
                 ImageView imageView = new ImageView(String.valueOf(ViewApplication.class.
                         getResource("/tcs/bridge/view/cards/" +
