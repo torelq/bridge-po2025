@@ -106,7 +106,9 @@ public class Game {
         }
         Player player = players.get(turn);
         boolean ok = currentTrick.PlayCard(player, card);
-        if (ok) turn = Position.next(turn);
+        if (!ok) return false;
+        turn = Position.next(turn);
+        playedCards++;
         if (currentTrick.isComplete()) {
             if (currentTrick.getWinner() == players.get(contract.declarer)
                     || currentTrick.getWinner() == players.get(Position.teammate(contract.declarer))) {
@@ -116,11 +118,10 @@ public class Game {
             turn = currentTrick.getWinner().getPosition();
             if (completeTricks.size() == 13) {
                 state = State.FINISHED;
-            } else {                
+            } else {
                 currentTrick = new Trick(contract.trump);
             }
         }
-        if (ok) ++playedCards;
         return ok;
     }
 

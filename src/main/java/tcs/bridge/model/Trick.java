@@ -22,9 +22,11 @@ public class Trick {
 
     public boolean PlayCard(Player player, Card card) {
         if (leadingSuit == null) {
-            leadingSuit = card.getSuit();
             boolean ok = player.play(card);
-            if (ok) plays.put(player, card);
+            if (ok) {
+                leadingSuit = card.getSuit();
+                plays.put(player, card);
+            }
             return ok;
         } else {
             if (card.getSuit() == leadingSuit || !player.hasSuit(leadingSuit)) {
