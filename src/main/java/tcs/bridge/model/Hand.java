@@ -27,11 +27,16 @@ public class Hand {
         return this;
     }
     
+    public boolean canPlay(Card card) {
+        return cards.contains(card);
+    }
+
     /**
      * 
      * @param card
      * @return true if the card was successfully played (without check for trump)
      */
+
     public boolean play(Card card) {
         return cards.remove(card);
     }

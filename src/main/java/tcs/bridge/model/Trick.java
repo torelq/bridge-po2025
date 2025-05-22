@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Trick {
+    static final int MAX_NUMBER_OF_TRICKS = 13;
+
     private final Suit trump; // null of no trump
     private Suit leadingSuit = null; // not played yet
     private final Map<Player, Card> plays = new HashMap<>();
@@ -20,23 +22,34 @@ public class Trick {
         return leadingSuit;
     }
 
-    public boolean PlayCard(Player player, Card card) {
+    public boolean canPlayCard(Player player, Card card) {
         if (leadingSuit == null) {
-            boolean ok = player.play(card);
-            if (ok) {
-                leadingSuit = card.getSuit();
-                plays.put(player, card);
-            }
-            return ok;
+            return player.canPlay(card);
         } else {
             if (card.getSuit() == leadingSuit || !player.hasSuit(leadingSuit)) {
-                boolean ok = player.play(card);
-                if (ok) plays.put(player, card);
-                return ok;
+                return player.canPlay(card);
             } else {
                 return false;
             }
         }
+    }
+
+    /**
+     * 
+     * @param player
+     * @param card
+     * @return true if the card was successfuly player
+     */
+    public boolean PlayCard(Player player, Card card) {
+        if (!canPlayCard(player, card)) {
+            return false;
+        }
+        if (leadingSuit == null) {
+            leadingSuit = card.getSuit();
+        }
+        player.play(card);
+        plays.put(player, card);
+        return true;
     }
 
     public boolean isComplete() {

@@ -36,7 +36,6 @@ public class Game {
     private final List<Trick> completeTricks = new ArrayList<>();
     private Trick currentTrick;
     private int playedCards = 0;
-    private int wonTricks = 0;
     /* ------------------------ */
 
     public void joinGame(Player player) {
@@ -54,12 +53,7 @@ public class Game {
         players.put(position, player);
         if (players.size() == 4) {
             state = State.BIDDING;
-            deck = new Deck().shuffle();
-            List<Hand> hands = deck.deal();
-            players.get(Position.NORTH).setHand(hands.get(0));
-            players.get(Position.EAST).setHand(hands.get(1));
-            players.get(Position.SOUTH).setHand(hands.get(2));
-            players.get(Position.WEST).setHand(hands.get(3));
+            dealCardsToPlayers();
         }
     }
 
@@ -79,12 +73,7 @@ public class Game {
         }
         boolean ok = bidding.makeBid(players.get(turn).getPosition(), bid);
         if (bidding.toRedeal()) {
-            deck = new Deck().shuffle();
-            List<Hand> hands = deck.deal();
-            players.get(Position.NORTH).setHand(hands.get(0));
-            players.get(Position.EAST).setHand(hands.get(1));
-            players.get(Position.SOUTH).setHand(hands.get(2));
-            players.get(Position.WEST).setHand(hands.get(3));
+            dealCardsToPlayers();
             bidding = new Bidding();
             turn = dealer;
             return ok;
@@ -100,29 +89,47 @@ public class Game {
         return ok;
     }
 
-    public boolean playCard(Card card) {
+    private void dealCardsToPlayers() {
+        if (players.size() != 4) {
+            throw new IllegalStateException("Game is not full");
+        }
+        deck = new Deck().shuffle();
+        List<Hand> hands = deck.deal();
+        players.get(Position.NORTH).setHand(hands.get(0));
+        players.get(Position.EAST).setHand(hands.get(1));
+        players.get(Position.SOUTH).setHand(hands.get(2));
+        players.get(Position.WEST).setHand(hands.get(3));
+    }
+
+    public boolean canPlayCard(Card card) {
         if (state != State.PLAYING) {
-            throw new IllegalStateException("Game is not in playing state");
+            throw new IllegalArgumentException("Game is not in playing state");
         }
         Player player = players.get(turn);
-        boolean ok = currentTrick.PlayCard(player, card);
-        if (!ok) return false;
+        return currentTrick.canPlayCard(player, card);
+    }
+
+    /**
+     * 
+     * @param card
+     * @return true if the card was successfully played
+     */
+    public boolean playCard(Card card) {
+        if (!canPlayCard(card)) return false;
+        Player player = players.get(turn);
+        currentTrick.PlayCard(player, card);
         turn = Position.next(turn);
         playedCards++;
         if (currentTrick.isComplete()) {
-            if (currentTrick.getWinner() == players.get(contract.declarer)
-                    || currentTrick.getWinner() == players.get(Position.teammate(contract.declarer))) {
-                wonTricks++;
-            }
             completeTricks.add(currentTrick);
             turn = currentTrick.getWinner().getPosition();
-            if (completeTricks.size() == 13) {
+            if (completeTricks.size() == Trick.MAX_NUMBER_OF_TRICKS) {
                 state = State.FINISHED;
             } else {
                 currentTrick = new Trick(contract.trump);
             }
         }
-        return ok;
+        return true;
     }
 
     public SimpleEntry<Position, Position> getWinner() {
@@ -133,7 +140,7 @@ public class Game {
         Player dummy = players.get(Position.teammate(contract.declarer));
         int goal = contract.level + 6;
 
-        if (wonTricks >= goal) {
+        if (getGainedTricks() >= goal) {
             return new SimpleEntry<>(declarer.getPosition(), dummy.getPosition());
         } else {
             return new SimpleEntry<>(Position.next(dummy.getPosition()), Position.next(declarer.getPosition()));
@@ -165,6 +172,13 @@ public class Game {
     }
 
     public int getGainedTricks() {
+        int wonTricks = 0;
+        for (Trick trick : completeTricks) {
+            if (trick.getWinner() == players.get(contract.declarer)
+                    || trick.getWinner() == players.get(Position.teammate(contract.declarer))) {
+                wonTricks++;
+            }
+        }
         return wonTricks;
     }
 
