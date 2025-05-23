@@ -9,6 +9,7 @@ import java.util.Map;
 import tcs.bridge.model.Bidding.Bid;
 import tcs.bridge.model.Player.Position;
 
+/* THIS IS MAIN MODEL OF THIS APPLICATION */
 public class Game {
 
     public enum State {
@@ -184,5 +185,9 @@ public class Game {
 
     public Contract getContract() {
         return contract;
+    }
+
+    public Map<Position, Player> getPlayers(){
+        return players;
     }
 }
