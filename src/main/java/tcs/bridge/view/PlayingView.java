@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
@@ -28,13 +29,15 @@ public class PlayingView extends BorderPane {
         this.controller = controller;
         this.setStyle("-fx-background-color: #32442d;");
 
+
         /* SETTING A SCENE FOR A PLAY */
         List<Hand> deal = game.getDeck().deal();
         BorderPane center = new BorderPane();
         controller.table.setAlignment(Pos.CENTER);
-        // adding all cards to deck
+
+        /* ADDING ALL CARDS TO DECK */
         for (int i = 0; i < deal.size(); i++) {
-            StackPane player = new StackPane();
+            StackPane player = controller.playersPanes.get(i);
             player.setAlignment(Pos.CENTER);
             int translate = -283;
             List<Card> cards = deal.get(i).getCards();
@@ -54,34 +57,36 @@ public class PlayingView extends BorderPane {
                 player.getChildren().add(imageView);
             }
             switch (i){
-                case 0: this.setTop(player); break;
+                case 0:
+                    player.setMinSize(600, 0);
+                    this.setTop(new HBox(20,
+                            new StackPane(controller.inforamtionLeftLabel),
+                            player,
+                            new StackPane(controller.inforamtionRightLabel)));
+                    this.getTop().setStyle("-fx-alignment: center;");
+                    break;
                 case 1: this.setRight(player); break;
                 case 2: this.setBottom(player); break;
                 case 3: this.setLeft(player); break;
             }
         }
-        /* LABEL FOR PLAYERS, BACKGROUND */
+        /* LABEL FOR PLAYERS */
         center.setCenter(controller.table);
 
-        controller.labelNorth.setTextAlignment(TextAlignment.CENTER);
-        controller.labelNorth.setTextFill(Color.BEIGE);
-        controller.labelNorth.setStyle("-fx-font-size: 15;");
-        center.setTop(new StackPane(controller.labelNorth));
+        for (int i = 0; i < 4; ++i){
+            controller.labels.get(i).setTextAlignment(TextAlignment.CENTER);
+            controller.labels.get(i).setTextFill(Color.BEIGE);
+            controller.labels.get(i).setStyle("-fx-font-size: 15;");
+            StackPane label = new StackPane(controller.labels.get(i));
+            label.setAlignment(Pos.CENTER);
+            switch (i){
+                case 0: center.setTop(label); break;
+                case 1: center.setRight(label); break;
+                case 2: center.setBottom(label); break;
+                case 3: center.setLeft(label); break;
+            }
+        }
 
-        controller.labelEast.setTextAlignment(TextAlignment.CENTER);
-        controller.labelEast.setTextFill(Color.BEIGE);
-        controller.labelEast.setStyle("-fx-font-size: 15;");
-        center.setRight(new StackPane(controller.labelEast));
-
-        controller.labelWest.setTextAlignment(TextAlignment.CENTER);
-        controller.labelWest.setTextFill(Color.BEIGE);
-        controller.labelWest.setStyle("-fx-font-size: 15;");
-        center.setLeft(new StackPane(controller.labelWest));
-
-        controller.labelSouth.setTextAlignment(TextAlignment.CENTER);
-        controller.labelSouth.setTextFill(Color.BEIGE);
-        controller.labelSouth.setStyle("-fx-font-size: 15;");
-        center.setBottom(new StackPane(controller.labelSouth));
         controller.makeTurn(game.getCurrentTurn());
 
         this.setCenter(center);

@@ -190,4 +190,8 @@ public class Game {
     public Map<Position, Player> getPlayers(){
         return players;
     }
+
+    public Bidding getBidding() {
+        return bidding;
+    }
 }

@@ -63,8 +63,20 @@ public class Bidding {
             return special==SpecialBid.REDOUBLE;
         }
 
-        boolean isSpecial() {
+        public boolean isSpecial() {
             return special!=null;
+        }
+
+        @Override
+        public String toString() {
+            if (special != null) {
+                return special.name();
+            }
+            if (suit == Suit.NO_TRUMP) {
+                return level + " NT";
+            }
+            String[] suits = {"♦", "♣", "♥", "♠"};
+            return level + " " + suits[suit.ordinal()];
         }
     }
 
