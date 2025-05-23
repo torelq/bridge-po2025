@@ -117,7 +117,7 @@ class BiddingTest {
 
     @Test
     void outOfOrderBidding() {
-        assertEquals(null, bidding.getTurn());
+        assertNull(bidding.getTurn());
         testBid(bidding, NORTH, new Bid(1, HEARTS));
         assertEquals(EAST, bidding.getTurn());
         assertThrows(IllegalArgumentException.class, () -> testBid(bidding, SOUTH, PASS_BID));
@@ -219,5 +219,18 @@ class BiddingTest {
         testBid(bidding, EAST, PASS_BID);
         testBid(bidding, SOUTH, PASS_BID);
         assertEquals(new Contract(5, NO_TRUMP, WEST, 1), bidding.getContract());
+    }
+
+    @Test
+    void cannotDoubleOnPass() {
+        assertFalse(testBid(bidding, NORTH, DOUBLE_BID));
+        assertTrue(testBid(bidding, NORTH, PASS_BID));
+        assertFalse(testBid(bidding, EAST, DOUBLE_BID));
+        assertTrue(testBid(bidding, EAST, PASS_BID));
+        assertFalse(testBid(bidding, SOUTH, DOUBLE_BID));
+        assertTrue(testBid(bidding, SOUTH, PASS_BID));
+        assertFalse(testBid(bidding, WEST, DOUBLE_BID));
+        assertTrue(testBid(bidding, WEST, PASS_BID));
+        assertNull(bidding.getContract());
     }
 }
