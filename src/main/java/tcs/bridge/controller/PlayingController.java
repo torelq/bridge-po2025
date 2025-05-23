@@ -18,22 +18,23 @@ public class PlayingController {
     private final Stage stage;
     private final Game game;
 
-    public Label labelNorth;
-    public Label labelEast;
-    public Label labelSouth;
-    public Label labelWest;
     public List<Label> labels;
     public StackPane table;
     public List<StackPane> playersPanes;
+    public Label inforamtionLeftLabel;
+    public Label inforamtionRightLabel;
 
-    public PlayingController(Stage stage, Game game) {
+    public PlayingController(Stage stage, Game game, Label leftLabel, Label rightLabel) {
         this.stage = stage;
         this.game = game;
+        inforamtionLeftLabel = leftLabel;
+        inforamtionRightLabel = rightLabel;
 
-        labelNorth = new Label("NORTH");
-        labelEast = new Label("EAST");
-        labelSouth = new Label("SOUTH");
-        labelWest = new Label("WEST");
+        //TODO: clean this mess
+        Label labelNorth = new Label("NORTH");
+        Label labelEast = new Label("EAST");
+        Label labelSouth = new Label("SOUTH");
+        Label labelWest = new Label("WEST");
         labels = new ArrayList<>(List.of(labelNorth, labelEast, labelSouth, labelWest));
         table = new StackPane();
         playersPanes = new ArrayList<>();
@@ -44,6 +45,7 @@ public class PlayingController {
 
     /* PLYING CARDS AND CHECKING IF FINISHED */
     public void onCardClicked(MouseEvent event, Card card, ImageView imageView, int position) {
+        // imageView = (ImageView)event.getSource();
         if (game.playCard(card)){
             if (game.getNumberOfPlayedCards() % 4 == 1)
                 table.getChildren().clear();
