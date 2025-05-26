@@ -1,4 +1,4 @@
-package tcs.bridge.communication;
+package tcs.bridge.communication.messages;
 
 import java.util.Objects;
 

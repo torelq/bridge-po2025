@@ -1,4 +1,4 @@
-package tcs.bridge.communication;
+package tcs.bridge.communication.messages;
 import java.io.Serializable;
 
 public interface Message extends Serializable {
