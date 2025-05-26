@@ -5,10 +5,12 @@ import tcs.bridge.model.Bidding.Bid;
 
 import java.util.Objects;
 
-public record MakeBidMessage(Position position, Bid bid) implements ClientToServerMessage {
+public record MakeBidRequest(Position position, Bid bid) implements ClientToServerMessage {
 
-    public MakeBidMessage {
+    public MakeBidRequest {
         Objects.requireNonNull(position);
         Objects.requireNonNull(bid);
     }
+
+    public record AcceptResponse() implements AcceptingResponse {}
 }

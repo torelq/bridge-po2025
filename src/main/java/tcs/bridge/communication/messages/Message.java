@@ -7,7 +7,12 @@ public interface Message extends Serializable {
         All implementing classes shall be documented here:
 
         Client to Server:
-        - MakeBidMessage
+        - MakeBidRequest (+ AcceptResponse)
+        - JoinGameRequest (+ AcceptResponse)
+        - StateRequest (+ StateResponse)
+
+        Server to Client:
+        - RejectResponse
 
         Others:
         - StringMessage (for test/debug purposes)
