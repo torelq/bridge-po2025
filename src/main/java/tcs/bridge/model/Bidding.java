@@ -3,6 +3,7 @@ package tcs.bridge.model;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Bidding {
@@ -201,6 +202,6 @@ public class Bidding {
     }
 
     public List<SimpleEntry<Player.Position, Bid>> getBidHistory() {
-        return bid_history;
+        return Collections.unmodifiableList(bid_history);
     }
 }

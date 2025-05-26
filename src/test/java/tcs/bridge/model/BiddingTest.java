@@ -8,6 +8,8 @@ import static tcs.bridge.model.Player.Position.*;
 import static tcs.bridge.model.Bidding.Bid.*;
 import static tcs.bridge.model.Suit.*;
 import tcs.bridge.model.Bidding.Bid;
+import java.util.List;
+import java.util.AbstractMap.SimpleEntry;
 
 class BiddingTest {
     private Bidding bidding;
@@ -232,5 +234,15 @@ class BiddingTest {
         assertFalse(testBid(bidding, WEST, DOUBLE_BID));
         assertTrue(testBid(bidding, WEST, PASS_BID));
         assertNull(bidding.getContract());
+    }
+
+    @Test
+    void getBidHistoryTest() {
+        List<SimpleEntry<Player.Position, Bid>> history = bidding.getBidHistory();
+        assertEquals(0, history.size());
+        assertThrows(RuntimeException.class, () -> history.add(new SimpleEntry<>(NORTH, new Bid(1, HEARTS))));
+        bidding.makeBid(NORTH, PASS_BID);
+        assertEquals(1, history.size());
+        assertEquals(new SimpleEntry<>(NORTH, PASS_BID), history.get(0));
     }
 }
