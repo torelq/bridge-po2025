@@ -3,7 +3,7 @@ import java.io.Serializable;
 
 public interface Message extends Serializable {
     /*
-        Each message shall be a record with maximal non-null protection.
+        Each message shall be a record with maximal null protection via Objects.requireNonNull.
         All implementing classes shall be documented here:
 
         Client to Server:
