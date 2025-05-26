@@ -21,7 +21,9 @@ public class ServerMessageStream implements Closeable {
     }
 
     public ClientToServerMessage readMessage() throws IOException {
-        while (true) if (messageStream.readMessage() instanceof ClientToServerMessage message) return message;
+        while (true) {
+            if (messageStream.readMessage() instanceof ClientToServerMessage message) return message;
+        }
     }
 
     public void writeMessage(ServerToClientMessage message) throws IOException {

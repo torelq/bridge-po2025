@@ -11,9 +11,9 @@ public class PipedMessageStream implements MessageStream {
     private final ObjectInputStream inputStream;
     private final ObjectOutputStream outputStream;
 
-    private PipedMessageStream(PipedInputStream inputStream, PipedOutputStream outputStream) throws IOException {
-        this.inputStream = new ObjectInputStream(inputStream);
-        this.outputStream = new ObjectOutputStream(outputStream);
+    private PipedMessageStream(ObjectInputStream inputStream, ObjectOutputStream outputStream) throws IOException {
+        this.inputStream = inputStream;
+        this.outputStream = outputStream;
     }
 
     @Override
@@ -41,6 +41,10 @@ public class PipedMessageStream implements MessageStream {
         PipedInputStream input1 = new PipedInputStream(output1);
         PipedOutputStream output2 = new PipedOutputStream();
         PipedInputStream input2 = new PipedInputStream(output2);
-        return new AbstractMap.SimpleEntry<>(new PipedMessageStream(input1, output2), new PipedMessageStream(input2, output1));
+
+        ObjectOutputStream outputStream1 = new ObjectOutputStream(output1), outputStream2 = new ObjectOutputStream(output2);
+        ObjectInputStream inputStream1 = new ObjectInputStream(input1), inputStream2 = new ObjectInputStream(input2);
+
+        return new AbstractMap.SimpleEntry<>(new PipedMessageStream(inputStream1, outputStream2), new PipedMessageStream(inputStream2, outputStream1));
     }
 }
