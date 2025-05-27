@@ -13,8 +13,8 @@ public class TCPMessageStream implements MessageStream {
     private final ObjectInputStream objectInputStream;
     private final ObjectOutputStream objectOutputStream;
 
-    public TCPMessageStream(InetAddress address, int port) throws IOException {
-        socket = new Socket(address, port);
+    public TCPMessageStream(Socket socket) throws IOException {
+        this.socket = socket;
         objectInputStream = new ObjectInputStream(socket.getInputStream());
         objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
     }

@@ -1,5 +1,6 @@
 package tcs.bridge.communication.messages;
 
+import tcs.bridge.model.Game;
 import tcs.bridge.model.Player.Position;
 import tcs.bridge.model.Bidding.Bid;
 
