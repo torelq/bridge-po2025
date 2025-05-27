@@ -131,7 +131,29 @@ public class Server {
         }
 
         void handleMakeBidRequest(Client client, MakeBidRequest makeBidRequest) {
-            // TODO
+            if (game.getState()==Game.State.BIDDING) {
+                if (client.position==game.getCurrentTurn() && makeBidRequest.position()==client.position) {
+                    if (game.makeBid(makeBidRequest.bid())) {
+                        client.clientHandler.writeMessage(new MakeBidRequest.AcceptResponse());
+                        sendAll(new MakeBidNotice(makeBidRequest.position(), makeBidRequest.bid()));
+                        return;
+                    }
+                }
+            }
+            client.clientHandler.writeMessage(new RejectResponse());
+        }
+
+        void handlePlayCardRequest(Client client, PlayCardRequest playCardRequest) {
+            if (game.getState()==Game.State.PLAYING) {
+                if (client.position==game.getCurrentTurn()) { // TODO: make sure players cannot play other's cards.
+                    if (game.playCard(playCardRequest.card())) {
+                        client.clientHandler.writeMessage(new PlayCardRequest.AcceptResponse());
+                        sendAll(new PlayCardNotice(playCardRequest.position(), playCardRequest.card()));
+                        return;
+                    }
+                }
+            }
+            client.clientHandler.writeMessage(new RejectResponse());
         }
     }
 
@@ -194,10 +216,14 @@ public class Server {
 
             if (message instanceof StringMessage stringMessage) {
                 handleStringMessage(client, stringMessage);
-            } if (message instanceof JoinGameRequest joinGameRequest) {
+            } else if (message instanceof JoinGameRequest joinGameRequest) {
                 gameWrapper.handleJoinGame(client, joinGameRequest);
-            } if (message instanceof StateRequest) {
+            } else if (message instanceof StateRequest) {
                 gameWrapper.handleStateRequest(client);
+            } else if (message instanceof MakeBidRequest makeBidRequest) {
+                gameWrapper.handleMakeBidRequest(client, makeBidRequest);
+            } else if (message instanceof PlayCardRequest playCardRequest) {
+                gameWrapper.handlePlayCardRequest(client, playCardRequest);
             } else {
                 throw new RuntimeException();
             }
