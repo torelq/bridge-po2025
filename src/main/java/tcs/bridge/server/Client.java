@@ -16,6 +16,7 @@ class Client {
         final BlockingQueue<Event> eventQueue;
         private final Future<?> readerFuture, writerFuture;
         private final CountDownLatch countDownLatch = new CountDownLatch(2);
+        private final Object putDisconnectEventLock = new Object();
 
         ClientHandler(ServerMessageStream messageStream, BlockingQueue<Event> eventQueue, ExecutorService executorService) {
             this.messageStream = messageStream;
@@ -54,19 +55,27 @@ class Client {
             }
         }
 
-        synchronized void putDisconnectEvent() {
-            while ((!defunct) && (!disconnectEventPut)) {
-                try {
-                    eventQueue.put(new DisconnectEvent(Client.this));
-                    disconnectEventPut = true;
-                    return;
-                } catch (InterruptedException ignored) {}
+        void putDisconnectEvent() {
+            synchronized (putDisconnectEventLock) {
+                while ((!defunct) && (!disconnectEventPut)) {
+                    try {
+                        eventQueue.put(new DisconnectEvent(Client.this));
+                        disconnectEventPut = true;
+                        return;
+                    } catch (InterruptedException ignored) {}
+                }
             }
         }
 
         synchronized void interrupt() {
             if (defunct) return;
             defunct = true;
+            try {
+                messageStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException();
+            }
             readerFuture.cancel(true);
             writerFuture.cancel(true);
             while (true) {

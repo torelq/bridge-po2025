@@ -15,8 +15,8 @@ public class TCPMessageStream implements MessageStream {
 
     public TCPMessageStream(Socket socket) throws IOException {
         this.socket = socket;
-        objectInputStream = new ObjectInputStream(socket.getInputStream());
         objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+        objectInputStream = new ObjectInputStream(socket.getInputStream());
     }
 
     public Message readMessage() throws IOException {

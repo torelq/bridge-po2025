@@ -3,6 +3,7 @@ package tcs.bridge.server;
 import tcs.bridge.communication.messages.ClientToServerMessage;
 import tcs.bridge.communication.messages.StringMessage;
 import tcs.bridge.communication.streams.ClientMessageStream;
+import tcs.bridge.communication.streams.PipedMessageStream;
 import tcs.bridge.communication.streams.ServerMessageStream;
 import tcs.bridge.communication.streams.TCPMessageStream;
 
@@ -11,16 +12,16 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class Server {
     private Thread acceptorTh, mainLoopTh;
-    BlockingQueue<Event> eventQueue;
+    BlockingQueue<Event> eventQueue = new LinkedBlockingQueue<>();
     private int port;
+    private final CompletableFuture<Integer> portFuture = new CompletableFuture<>();
     private final ExecutorService clientHandlerExecutor = Executors.newCachedThreadPool();
 
     private final MainLoop mainLoop = new MainLoop();
@@ -32,6 +33,7 @@ public class Server {
                 while (!Thread.interrupted()) {
                     try {
                         Socket clientSocket = serverSocket.accept();
+                        System.out.println("JO");
                         eventQueue.put(new TCPConnectEvent(clientSocket));
                     } catch (SocketTimeoutException ignored) {}
                 }
@@ -60,6 +62,10 @@ public class Server {
                         handleDisconnectEvent(disconnectEvent);
                     } else if (event instanceof MessageEvent messageEvent) {
                         handleMessageEvent(messageEvent);
+                    } else if (event instanceof ShutdownEvent) {
+                        handleShutdownEvent();
+                    } else {
+                        throw new RuntimeException();
                     }
 
                 } catch (InterruptedException ignored) {}
@@ -145,8 +151,10 @@ public class Server {
 
     // Blocking
     private void run() {
-        try (ServerSocket socket = new ServerSocket(0)) {
+        try {
+            ServerSocket socket = new ServerSocket(0);
             port = socket.getLocalPort();
+            portFuture.complete(port);
             acceptorTh = new Thread(() -> acceptorThread(socket));
         } catch (IOException e) {
             e.printStackTrace();
@@ -161,6 +169,7 @@ public class Server {
             try {
                 acceptorTh.join();
                 mainLoopTh.join();
+                return;
             } catch (InterruptedException ignored) {}
         }
     }
@@ -180,7 +189,20 @@ public class Server {
         }
     }
 
-    synchronized public ClientMessageStream localConnect() {
-        throw new RuntimeException("Not implemented yet!");
+    synchronized public ClientMessageStream localConnect() throws IOException, InterruptedException {
+        AbstractMap.SimpleEntry<PipedMessageStream, PipedMessageStream> entry = PipedMessageStream.makePipe();
+        ServerMessageStream serverMessageStream = new ServerMessageStream(entry.getKey());
+        ClientMessageStream clientMessageStream = new ClientMessageStream(entry.getValue());
+        eventQueue.put(new LocalConnectEvent(serverMessageStream));
+        return clientMessageStream;
+    }
+
+    public int getPort() throws InterruptedException {
+        try {
+            return portFuture.get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
     }
 }
