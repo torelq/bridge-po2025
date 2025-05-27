@@ -1,20 +1,19 @@
 package tcs.bridge.server;
 
-import tcs.bridge.communication.messages.ClientToServerMessage;
-import tcs.bridge.communication.messages.StringMessage;
+import tcs.bridge.communication.messages.*;
 import tcs.bridge.communication.streams.ClientMessageStream;
 import tcs.bridge.communication.streams.PipedMessageStream;
 import tcs.bridge.communication.streams.ServerMessageStream;
 import tcs.bridge.communication.streams.TCPMessageStream;
+import tcs.bridge.model.Game;
+import tcs.bridge.model.Player;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.AbstractMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class Server {
@@ -23,6 +22,7 @@ public class Server {
     private int port;
     private final CompletableFuture<Integer> portFuture = new CompletableFuture<>();
     private final ExecutorService clientHandlerExecutor = Executors.newCachedThreadPool();
+    private final GameWrapper gameWrapper = new GameWrapper();
 
     private final MainLoop mainLoop = new MainLoop();
 
@@ -45,6 +45,93 @@ public class Server {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    class GameWrapper {
+        private Game game = new Game();
+        private final Map<Player.Position, PlayerRecord> playerMap = new HashMap<>();
+
+        static class PlayerRecord {
+            Client client = null;
+            Player player;
+            String name;
+
+            PlayerRecord (Player player) {
+                this.player = player;
+            }
+        }
+
+        GameWrapper() {
+            for (Player.Position position : Player.Position.values()) {
+                Player player = new Player(position);
+                game.joinGame(player);
+                playerMap.put(position, new PlayerRecord(player));
+            }
+        }
+
+        Player.Position register(Client client, Player.Position position) {
+            if (client.position!=null) return null;
+            if (position==null) {
+                for (Player.Position position1 : Player.Position.values()) {
+                    if (register(client, position1)!=null) return position1;
+                }
+                return null;
+            } else {
+                synchronized (playerMap) {
+                    PlayerRecord playerRecord = playerMap.get(position);
+                    if (playerRecord.client!=null) return null;
+                    playerRecord.client = client;
+                    client.position = position;
+                    return position;
+                }
+            }
+        }
+
+        Player.Position unregister(Client client) {
+            if (client.position==null) return null;
+            synchronized (playerMap) {
+                Player.Position position = client.position;
+                playerMap.get(position).client = null;
+                client.position = null;
+                return position;
+            }
+        }
+
+        void sendAll(ServerToClientMessage message) {
+            synchronized (playerMap) {
+                for (Map.Entry<Player.Position, PlayerRecord> entry : playerMap.entrySet()) {
+                    if (entry.getValue().client!=null) {
+                        entry.getValue().client.clientHandler.writeMessage(message);
+                    }
+                }
+            }
+        }
+
+        void handleUnregister(Client client) {
+            Player.Position position = unregister(client);
+            if (position!=null) sendAll(new LeaveGameNotice(position));
+        }
+
+        void handleJoinGame(Client client, JoinGameRequest joinGameRequest) {
+            Player.Position positionActual = register(client, joinGameRequest.position());
+            if (positionActual==null) {
+                client.clientHandler.writeMessage(new RejectResponse());
+                return;
+            }
+            synchronized (playerMap) {
+                playerMap.get(positionActual).name = joinGameRequest.name();
+            }
+            client.clientHandler.writeMessage(new JoinGameRequest.AcceptResponse());
+            sendAll(new JoinGameNotice(joinGameRequest.name(), positionActual));
+        }
+
+        void handleStateRequest(Client client) {
+            client.clientHandler.writeMessage(new StateRequest.StateResponse(client.position, game));
+        }
+
+        void handleMakeBidRequest(Client client, MakeBidRequest makeBidRequest) {
+            // TODO
         }
     }
 
@@ -95,7 +182,7 @@ public class Server {
         private void handleDisconnectEvent(DisconnectEvent disconnectEvent) {
             if (clients.contains(disconnectEvent.client())) {
                 clients.remove(disconnectEvent.client());
-                // TODO: Unregister the client
+                gameWrapper.handleUnregister(disconnectEvent.client());
                 disconnectEvent.client().clientHandler.interrupt();
             }
         }
@@ -107,6 +194,10 @@ public class Server {
 
             if (message instanceof StringMessage stringMessage) {
                 handleStringMessage(client, stringMessage);
+            } if (message instanceof JoinGameRequest joinGameRequest) {
+                gameWrapper.handleJoinGame(client, joinGameRequest);
+            } if (message instanceof StateRequest) {
+                gameWrapper.handleStateRequest(client);
             } else {
                 throw new RuntimeException();
             }

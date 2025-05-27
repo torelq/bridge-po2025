@@ -11,7 +11,7 @@ class Client {
 
     class ClientHandler {
         private boolean defunct=false, disconnectEventPut=false;
-        final ServerMessageStream messageStream;
+        private final ServerMessageStream messageStream;
         private final BlockingQueue<ServerToClientMessage> outputQueue = new LinkedBlockingQueue<>(50);
         final BlockingQueue<Event> eventQueue;
         private final Future<?> readerFuture, writerFuture;
@@ -34,7 +34,7 @@ class Client {
                     }
                 } catch (IOException | InterruptedException ignored) {}
 
-                putDisconnectEvent();
+                initiateDisconnection();
             } finally {
                 countDownLatch.countDown();
             }
@@ -49,14 +49,18 @@ class Client {
                     }
                 } catch (IOException | InterruptedException ignored) {}
 
-                putDisconnectEvent();
+                initiateDisconnection();
             } finally {
                 countDownLatch.countDown();
             }
         }
 
-        void putDisconnectEvent() {
+        private void initiateDisconnection() {
             synchronized (putDisconnectEventLock) {
+                try {
+                    messageStream.close();
+                } catch (IOException ignored) {}
+
                 while ((!defunct) && (!disconnectEventPut)) {
                     try {
                         eventQueue.put(new DisconnectEvent(Client.this));
@@ -91,7 +95,7 @@ class Client {
             try {
                 outputQueue.add(message);
             } catch (IllegalStateException e) {
-                putDisconnectEvent();
+                initiateDisconnection();
             }
         }
     }

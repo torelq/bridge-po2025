@@ -16,5 +16,7 @@ public interface Message extends Serializable {
 
         Others:
         - StringMessage (for test/debug purposes)
+
+        As of now not all are documented. Not my problem.
     */
 }

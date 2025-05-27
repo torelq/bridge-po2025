@@ -9,7 +9,6 @@ public record StateRequest() implements ClientToServerMessage {
 
     public record StateResponse(Player.Position myPosition, Game game) implements AcceptingResponse {
         public StateResponse {
-            Objects.requireNonNull(myPosition);
             Objects.requireNonNull(game);
         }
     }
