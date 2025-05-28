@@ -1,6 +1,8 @@
 package tcs.bridge.model;
 
-public class Contract {
+import java.io.Serializable;
+
+public class Contract implements Serializable {
     final int level; // 1-7
     final Suit trump; // null - no trump
     final Player.Position declarer;

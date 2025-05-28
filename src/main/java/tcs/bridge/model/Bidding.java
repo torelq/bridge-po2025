@@ -1,14 +1,15 @@
 package tcs.bridge.model;
 
+import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class Bidding {
+public class Bidding implements Serializable {
 
-    public static class Bid {
+    public static class Bid implements Serializable {
         public enum SpecialBid {
             PASS,
             DOUBLE,

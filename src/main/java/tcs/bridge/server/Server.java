@@ -20,6 +20,7 @@ public class Server {
     private Thread acceptorTh, mainLoopTh;
     BlockingQueue<Event> eventQueue = new LinkedBlockingQueue<>();
     private int port;
+    private boolean verbose=false;
     private final CompletableFuture<Integer> portFuture = new CompletableFuture<>();
     private final ExecutorService clientHandlerExecutor = Executors.newCachedThreadPool();
     private final GameWrapper gameWrapper = new GameWrapper();
@@ -33,7 +34,6 @@ public class Server {
                 while (!Thread.interrupted()) {
                     try {
                         Socket clientSocket = serverSocket.accept();
-                        System.out.println("JO");
                         eventQueue.put(new TCPConnectEvent(clientSocket));
                     } catch (SocketTimeoutException ignored) {}
                 }
@@ -145,12 +145,11 @@ public class Server {
 
         void handlePlayCardRequest(Client client, PlayCardRequest playCardRequest) {
             if (game.getState()==Game.State.PLAYING) {
-                if (client.position==game.getCurrentTurn()) { // TODO: make sure players cannot play other's cards.
-                    if (game.playCard(playCardRequest.card())) {
-                        client.clientHandler.writeMessage(new PlayCardRequest.AcceptResponse());
-                        sendAll(new PlayCardNotice(playCardRequest.position(), playCardRequest.card()));
-                        return;
-                    }
+                // TODO: make sure players cannot play other's cards.
+                if (game.playCard(playCardRequest.card())) {
+                    client.clientHandler.writeMessage(new PlayCardRequest.AcceptResponse());
+                    sendAll(new PlayCardNotice(playCardRequest.position(), playCardRequest.card()));
+                    return;
                 }
             }
             client.clientHandler.writeMessage(new RejectResponse());
@@ -164,6 +163,7 @@ public class Server {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     Event event = eventQueue.take();
+                    if (verbose) System.out.println(event);
 
                     if (event instanceof ConnectEvent connectEvent) {
                         handleConnectEvent(connectEvent);
@@ -321,5 +321,9 @@ public class Server {
             e.printStackTrace();
             throw new RuntimeException();
         }
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }

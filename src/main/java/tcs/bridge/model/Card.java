@@ -1,6 +1,8 @@
 package tcs.bridge.model;
 
-public class Card implements Comparable<Card> {
+import java.io.Serializable;
+
+public class Card implements Comparable<Card>, Serializable {
     private final Suit suit;
     private final Rank rank;
 

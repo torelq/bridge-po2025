@@ -1,5 +1,6 @@
 package tcs.bridge.model;
 
+import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,7 +11,7 @@ import tcs.bridge.model.Bidding.Bid;
 import tcs.bridge.model.Player.Position;
 
 /* THIS IS MAIN MODEL OF THIS APPLICATION */
-public class Game {
+public class Game implements Serializable {
 
     public enum State {
         PREGAME,

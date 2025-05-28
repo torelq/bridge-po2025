@@ -1,6 +1,8 @@
 package tcs.bridge.model;
 
-public class Player extends Hand {
+import java.io.Serializable;
+
+public class Player extends Hand implements Serializable {
     public static enum Position {
         NORTH,
         EAST,
