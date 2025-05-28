@@ -74,11 +74,12 @@ public class Game implements Serializable {
             throw new IllegalStateException("Game is not in bidding state");
         }
         boolean ok = bidding.makeBid(players.get(turn).getPosition(), bid);
+        if (!ok) return false;
         if (bidding.toRedeal()) {
             dealCardsToPlayers();
             bidding = new Bidding();
             turn = dealer;
-            return ok;
+            return true;
         }
         if (bidding.decision()) {
             state = State.PLAYING;
@@ -88,7 +89,7 @@ public class Game implements Serializable {
         } else {
             turn = Position.next(turn);
         }
-        return ok;
+        return true;
     }
 
     private void dealCardsToPlayers() {
