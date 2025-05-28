@@ -1,8 +1,6 @@
 package tcs.bridge.model;
 
-import java.io.Serializable;
-
-public enum Rank implements Serializable {
+public enum Rank {
     TWO("2"),
     THREE("3"),
     FOUR("4"),

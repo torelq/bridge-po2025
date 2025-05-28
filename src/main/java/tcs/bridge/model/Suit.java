@@ -1,8 +1,6 @@
 package tcs.bridge.model;
 
-import java.io.Serializable;
-
-public enum Suit implements Serializable {
+public enum Suit {
     DIAMONDS("Diamonds"),
     CLUBS("Clubs"),
     HEARTS("Hearts"),
