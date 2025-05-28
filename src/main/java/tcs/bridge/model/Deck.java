@@ -1,10 +1,11 @@
 package tcs.bridge.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Deck {
+public class Deck implements Serializable {
     private final List<Card> cards;
     
     public Deck() {

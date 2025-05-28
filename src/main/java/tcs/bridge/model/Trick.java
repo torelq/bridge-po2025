@@ -1,9 +1,10 @@
 package tcs.bridge.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Trick {
+public class Trick implements Serializable {
     static final int MAX_NUMBER_OF_TRICKS = 13;
 
     private final Suit trump; // null of no trump
