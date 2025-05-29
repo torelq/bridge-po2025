@@ -36,5 +36,12 @@ public class Deck implements Serializable {
         return hands;
     }
 
-    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Deck: ");
+        for (Card card : cards) {
+            sb.append(card.toString()).append(" ");
+        }
+        return sb.toString().trim();
+    }
 }

@@ -1,15 +1,29 @@
 package tcs.bridge.model;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static tcs.bridge.model.Player.Position.*;
-import static tcs.bridge.model.Bidding.Bid.*;
-import static tcs.bridge.model.Suit.*;
 import tcs.bridge.model.Bidding.Bid;
-import java.util.List;
-import java.util.AbstractMap.SimpleEntry;
+import static tcs.bridge.model.Bidding.Bid.DOUBLE_BID;
+import static tcs.bridge.model.Bidding.Bid.PASS_BID;
+import static tcs.bridge.model.Bidding.Bid.REDOUBLE_BID;
+import static tcs.bridge.model.Player.Position.EAST;
+import static tcs.bridge.model.Player.Position.NORTH;
+import static tcs.bridge.model.Player.Position.SOUTH;
+import static tcs.bridge.model.Player.Position.WEST;
+import static tcs.bridge.model.Suit.CLUBS;
+import static tcs.bridge.model.Suit.DIAMONDS;
+import static tcs.bridge.model.Suit.HEARTS;
+import static tcs.bridge.model.Suit.NO_TRUMP;
+import static tcs.bridge.model.Suit.SPADES;
 
 class BiddingTest {
     private Bidding bidding;
@@ -244,5 +258,32 @@ class BiddingTest {
         bidding.makeBid(NORTH, PASS_BID);
         assertEquals(1, history.size());
         assertEquals(new SimpleEntry<>(NORTH, PASS_BID), history.get(0));
+    }
+
+    public static void main(String[] args) {
+        Bidding bidding = new Bidding();
+        bidding.makeBid(NORTH, new Bid(1, HEARTS));
+        System.out.println(bidding);
+
+        bidding.makeBid(EAST, PASS_BID);
+        bidding.makeBid(SOUTH, PASS_BID);
+        bidding.makeBid(WEST, PASS_BID);
+        System.out.println(bidding);
+
+        bidding = new Bidding();
+        bidding.makeBid(NORTH, new Bid(1, CLUBS));
+        bidding.makeBid(EAST, DOUBLE_BID);
+        bidding.makeBid(SOUTH, REDOUBLE_BID);
+        bidding.makeBid(WEST, PASS_BID);
+        bidding.makeBid(NORTH, PASS_BID);
+        bidding.makeBid(EAST, PASS_BID);
+        System.out.println(bidding);
+
+        bidding = new Bidding();
+        bidding.makeBid(EAST, PASS_BID);
+        bidding.makeBid(SOUTH, PASS_BID);
+        bidding.makeBid(WEST, PASS_BID);
+        bidding.makeBid(NORTH, PASS_BID);
+        System.out.println(bidding);
     }
 }

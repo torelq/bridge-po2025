@@ -19,6 +19,12 @@ public enum Suit {
 
     public static String abbreviationOf(Suit suit) {
         if (suit==NO_TRUMP) return "NT";
-        else return String.valueOf(suit.name.charAt(0));
+        final String[] suits = {"♦", "♣", "♥", "♠"};
+        return suits[suit.ordinal()];
+    }
+
+    @Override
+    public String toString() {
+        return abbreviationOf(this);
     }
 }

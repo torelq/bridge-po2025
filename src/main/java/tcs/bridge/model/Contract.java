@@ -23,6 +23,7 @@ public class Contract implements Serializable {
         this.scoreMultiplier = scoreMultiplier;
     }
 
+    @Override
     public String toString() {
         String s = String.valueOf(level)+Suit.abbreviationOf(trump)+Player.Position.abbreviationOf(declarer);
         if (scoreMultiplier==2) s += "x";

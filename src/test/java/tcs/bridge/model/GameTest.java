@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.Test;
 
 import tcs.bridge.model.Bidding.Bid;
@@ -179,5 +178,48 @@ class GameTest {
         assertEquals(Game.State.FINISHED, game.getState());
         SimpleEntry<Player.Position, Player.Position> winner = game.getWinner();
         assertNotNull(winner);
+    }
+
+    public static void main(String[] args) {
+        Game game = new Game();
+        Player playerNorth = new Player(Player.Position.NORTH);
+        Player playerEast = new Player(Player.Position.EAST);
+        Player playerSouth = new Player(Player.Position.SOUTH);
+        Player playerWest = new Player(Player.Position.WEST);
+        game.joinGame(playerNorth);
+        game.joinGame(playerEast);
+        game.joinGame(playerSouth);
+        game.joinGame(playerWest);
+
+        System.out.println(game.toString());
+
+        Bid bid = new Bid(1, Suit.HEARTS);
+        Bid passBid = Bid.PASS_BID;
+        game.makeBid(bid);
+        game.makeBid(passBid);
+        game.makeBid(passBid);
+        game.makeBid(passBid);
+
+        System.out.println(game.toString());
+
+        for (int i = 0; i < 13; i++) {
+            int count = 0;
+            for (int j = 0; j < 4; j++) {
+                Deck sampleDeck = new Deck();
+                for (Card card : sampleDeck.getCards()) {
+                    if (game.playCard(card)) {
+                        count++;
+                        break;
+                    }
+                }
+            }
+            // System.out.println(game.getCompleteTricks().size());
+        }
+        
+        System.out.println(game.toString());
+
+        List<Trick> tricks = game.getCompleteTricks();
+        SimpleEntry<Player.Position, Player.Position> winner = game.getWinner();
+        System.out.println(game.toString());
     }
 }

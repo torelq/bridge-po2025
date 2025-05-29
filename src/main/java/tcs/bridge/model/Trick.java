@@ -83,4 +83,24 @@ public class Trick implements Serializable {
         }
         return winner;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Trick {\n")
+          .append("  Trump: ").append(trump).append(",\n")
+          .append("  Leading Suit: ").append(leadingSuit).append(",\n")
+          .append("  Plays:\n");
+        for (var entry : plays.entrySet()) {
+            sb.append("    ").append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
+        }
+        if (isComplete()) {
+            sb.append("Winner: ").append(getWinner().getPosition());
+        } else {
+            sb.append("Trick not complete");
+        }
+        sb.append("\n}");
+        sb.append("\n");
+        return sb.toString();
+    }
 }

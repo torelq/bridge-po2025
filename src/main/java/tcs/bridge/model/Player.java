@@ -53,4 +53,8 @@ public class Player extends Hand implements Serializable {
         return position;
     }
 
+    @Override
+    public String toString() {
+        return "Player{" + position + "," + super.toString() + '}';
+    }
 }

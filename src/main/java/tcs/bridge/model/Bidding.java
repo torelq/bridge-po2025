@@ -205,4 +205,21 @@ public class Bidding implements Serializable {
     public List<SimpleEntry<Player.Position, Bid>> getBidHistory() {
         return Collections.unmodifiableList(bid_history);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Bidding {\n");
+        for (SimpleEntry<Player.Position, Bid> entry : bid_history) {
+            sb.append("  ").append(entry.getKey().toString()).append(" bids ").append(entry.getValue().toString()).append("\n");
+        }
+        if (toRedeal()) {
+            sb.append("  redeal!!!\n");
+        } else if (isFinished) {
+            sb.append("  Contract: ").append(contract.toString()).append("\n");
+        } else {
+            sb.append("  Bidding is not finished.\n");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
 }

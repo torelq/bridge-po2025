@@ -40,12 +40,17 @@ public class Game implements Serializable {
     private int playedCards = 0;
     /* ------------------------ */
 
+    private final StringBuilder logs = new StringBuilder();
+
     public void joinGame(Player player) {
         Position position = player.getPosition();
         if (state != State.PREGAME) {
+            logs.append("Player ").append(player.toString())
+                .append(" tried to join game in state: ").append(state).append("\n");
             throw new IllegalStateException("Game is not in pregame state");
         }
         if (players.containsKey(position)) {
+            logs.append("Player ").append(player.toString()).append(" tried to join game\n");
             throw new IllegalArgumentException("Position already occupied");
         }
         if (players.isEmpty()) {
@@ -54,8 +59,12 @@ public class Game implements Serializable {
         }
         players.put(position, player);
         if (players.size() == 4) {
+            logs.append("Game is full, starting bidding\n");
             state = State.BIDDING;
             dealCardsToPlayers();
+            for (Map.Entry<Position, Player> x : players.entrySet()) {
+                logs.append(x.getValue().toString()).append("\n");
+            }
         }
     }
 
@@ -74,8 +83,11 @@ public class Game implements Serializable {
             throw new IllegalStateException("Game is not in bidding state");
         }
         boolean ok = bidding.makeBid(players.get(turn).getPosition(), bid);
+        logs.append("Player ").append(players.get(turn).getPosition().toString())
+            .append(" made a bid: ").append(bid.toString()).append("\n");
         if (!ok) return false;
         if (bidding.toRedeal()) {
+            logs.append("Bidding ended with 4 passes, redealing cards\n");
             dealCardsToPlayers();
             bidding = new Bidding();
             turn = dealer;
@@ -85,6 +97,7 @@ public class Game implements Serializable {
             state = State.PLAYING;
             contract = bidding.getContract();
             turn = Position.next(contract.declarer); // left from the declarer
+            logs.append("Bidding ended with contract: ").append(bidding.getContract().toString()).append("\n");
             currentTrick = new Trick(contract.trump);
         } else {
             turn = Position.next(turn);
@@ -124,6 +137,7 @@ public class Game implements Serializable {
         turn = Position.next(turn);
         playedCards++;
         if (currentTrick.isComplete()) {
+            logs.append(currentTrick.toString()).append("\n");
             completeTricks.add(currentTrick);
             turn = currentTrick.getWinner().getPosition();
             if (completeTricks.size() == Trick.MAX_NUMBER_OF_TRICKS) {
@@ -144,8 +158,16 @@ public class Game implements Serializable {
         int goal = contract.level + 6;
 
         if (getGainedTricks() >= goal) {
+            logs.append("Declarer ").append(declarer.toString())
+                .append(" and dummy ").append(dummy.toString())
+                .append(" won the game with ").append(getGainedTricks())
+                .append(" tricks.\n");
             return new SimpleEntry<>(declarer.getPosition(), dummy.getPosition());
         } else {
+            logs.append("Declarer ").append(declarer.toString())
+                .append(" and dummy ").append(dummy.toString())
+                .append(" lost the game with only ").append(getGainedTricks())
+                .append(" tricks.\n");
             return new SimpleEntry<>(Position.next(dummy.getPosition()), Position.next(declarer.getPosition()));
         }
     }
@@ -195,5 +217,23 @@ public class Game implements Serializable {
 
     public Bidding getBidding() {
         return bidding;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Game {\n")
+          .append("  State: ").append(state == null ? "null" : state).append(",\n")
+          .append("  Dealer: ").append(dealer == null ? "null" : dealer).append(",\n")
+          .append("  Players:\n");
+        for (Map.Entry<Position, Player> entry : players.entrySet()) {
+            sb.append("    ").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
+        sb.append("  Bidding: ").append(bidding == null ? "null" : bidding.toString()).append("\n")
+          .append("  Contract: ").append(contract == null ? "null" : contract.toString()).append("\n")
+          .append("  Complete Tricks: ").append(completeTricks.size()).append("\n")
+          .append("  Played Cards: ").append(playedCards).append("\n")
+          .append("}\nLogs:\n").append(logs);
+        return sb.toString();
     }
 }
