@@ -80,6 +80,12 @@ public class Bidding implements Serializable {
             String[] suits = {"♦", "♣", "♥", "♠"};
             return level + " " + suits[suit.ordinal()];
         }
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Bid)) return false;
+            Bid other = (Bid) o;
+            return this.level == other.level && this.suit == other.suit && this.special == other.special;
+        }
     }
 
     private final List<SimpleEntry<Player.Position, Bid>> bid_history = new ArrayList<>();
@@ -149,6 +155,24 @@ public class Bidding implements Serializable {
             }
             return true;
         }
+    }
+
+    public List<Bid> getAvailableBids() {
+        List<Bid> bids = new ArrayList<>();
+        for (int level = 1; level <= 7; level++) {
+            for (Suit suit : Suit.values()) {
+                Bid bid = new Bid(level, suit);
+                if (bid.isGreaterThan(lastNumericalBid)) {
+                    bids.add(bid);
+                }
+            }
+            Bid trumpBid = new Bid(level, Suit.NO_TRUMP);
+            if (trumpBid.isGreaterThan(lastNumericalBid)) {
+                bids.add(trumpBid);
+            }
+        }
+        bids.sort((bid1, bid2) -> bid1.isGreaterThan(bid2) ? -1 : 1);
+        return bids;
     }
 
     public boolean canBid(Player.Position position, Bid bid) {
@@ -222,4 +246,5 @@ public class Bidding implements Serializable {
         sb.append("}");
         return sb.toString();
     }
+
 }

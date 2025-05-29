@@ -36,7 +36,30 @@ class BiddingTest {
         assertEquals(dryRunResult, bidding.makeBid(position, bid));
         return dryRunResult;
     }
+    @Test
+    void getAvailableBidsTest() {
+        List<Bid> availableBids = bidding.getAvailableBids();
+        assertEquals(35, availableBids.size());
+        assertTrue(availableBids.contains(new Bid(1, CLUBS)));
+        assertTrue(availableBids.contains(new Bid(7, NO_TRUMP)));
 
+        testBid(bidding, NORTH, new Bid(1, HEARTS));
+        availableBids = bidding.getAvailableBids();
+        assertFalse(availableBids.contains(new Bid(1, CLUBS)));
+        assertTrue(availableBids.contains(new Bid(2, HEARTS)));
+        assertTrue(availableBids.contains(new Bid(7, NO_TRUMP)));
+
+        testBid(bidding, EAST, new Bid(3, SPADES));
+        availableBids = bidding.getAvailableBids();
+        assertFalse(availableBids.contains(new Bid(3, HEARTS)));
+        assertTrue(availableBids.contains(new Bid(4, SPADES)));
+        assertTrue(availableBids.contains(new Bid(7, NO_TRUMP)));
+
+        testBid(bidding, SOUTH, PASS_BID);
+        availableBids = bidding.getAvailableBids();
+        assertTrue(availableBids.contains(new Bid(4, SPADES)));
+        assertTrue(availableBids.contains(new Bid(7, NO_TRUMP)));
+    }
     @Test
     void onlyPassesFinish() {
         assertNull(bidding.getTurn());
