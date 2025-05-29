@@ -1,5 +1,6 @@
 package tcs.bridge.controller;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
@@ -9,15 +10,24 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import tcs.bridge.App;
+import tcs.bridge.communication.messages.*;
+import tcs.bridge.communication.streams.ClientMessageStream;
 import tcs.bridge.model.*;
 import tcs.bridge.view.PlayingView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import static tcs.bridge.App.clientMessageStream;
+import static tcs.bridge.App.server;
+import static tcs.bridge.App.stage;
+import static tcs.bridge.App.game;
+import static tcs.bridge.App.myPosition;
+import static tcs.bridge.App.playerNames;
+
 
 public class BiddingController {
-    private final Stage stage;
-    private final Game game;
 
     public List<Label> labels;
     public StackPane table;
@@ -25,27 +35,55 @@ public class BiddingController {
     public Label inforamtionLeftLabel;
     public Label inforamtionRightLabel;
 
-    public BiddingController(Stage stage, Game game) {
-        this.stage = stage;
-        this.game = game;
+    public BiddingController() {
+        Thread readerTh = new Thread(() -> readerThread(App.clientMessageStream));
+        readerTh.start();
 
-        Label labelNorth = new Label("NORTH");
-        Label labelEast = new Label("EAST");
-        Label labelSouth = new Label("SOUTH");
-        Label labelWest = new Label("WEST");
-        labels = new ArrayList<>(List.of(labelNorth, labelEast, labelSouth, labelWest));
+        labels = new ArrayList<>();
+        for (Player.Position pos : Player.Position.values()) {
+            labels.add(new Label(pos.name() + "\n" + playerNames.get(pos.ordinal()) + (pos == myPosition ? " (me)" : "")));
+        }
         table = new StackPane();
+    }
+
+    private void readerThread(ClientMessageStream clientMessageStream) {
+        try {
+            while (true) {
+                ServerToClientMessage message = clientMessageStream.readMessage();
+                System.out.println(message);
+                if (message instanceof JoinGameNotice joinGameNotice){
+                    playerNames.set(joinGameNotice.position().ordinal(), joinGameNotice.name());
+                    Platform.runLater(() -> {
+                        labels.get(joinGameNotice.position().ordinal()).setText(joinGameNotice.position().name()
+                                + "\n" + playerNames.get(joinGameNotice.position().ordinal())
+                                + (joinGameNotice.position() == myPosition ? " (me)" : ""));
+                    });
+                }
+                if (message instanceof MakeBidNotice) {
+                    Platform.runLater(()->{
+                        Bidding.Bid bid = ((MakeBidNotice) message).bid();
+                        game.makeBid(bid);
+                        if (!bid.isSpecial())
+                            inforamtionLeftLabel.setText(bid.toString());
+                        makeTurn(game.getCurrentTurn());
+                        if (game.getState() == Game.State.PLAYING){
+                            startPlaying();
+                        }
+                    });
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /* BIDDING AND CHECKING IF END OF BIDDING */
     public void onBidButtonClicked(ActionEvent event, Bidding.Bid bid) {
-        if (game.getBidding().canBid(game.getCurrentTurn(), bid)) {
-            game.makeBid(bid);
-            if (!bid.isSpecial())
-                inforamtionLeftLabel.setText(bid.toString());
-            makeTurn(game.getCurrentTurn());
-            if (game.getState() == Game.State.PLAYING){
-                startPlaying();
+        if (game.getBidding().canBid(game.getCurrentTurn(), bid)){
+            try {
+                App.clientMessageStream.writeMessage(new MakeBidRequest(game.getCurrentTurn(), bid));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -61,8 +99,8 @@ public class BiddingController {
     }
 
     private void startPlaying(){
-        PlayingController controller = new PlayingController(stage, game, inforamtionLeftLabel, inforamtionRightLabel);
-        PlayingView view = new PlayingView(game, controller);
+        PlayingController controller = new PlayingController(inforamtionLeftLabel, inforamtionRightLabel);
+        PlayingView view = new PlayingView(controller);
 
         stage.setTitle("TCS Bridge - PLAYING");
         stage.setScene(new Scene(view, 900, 900));

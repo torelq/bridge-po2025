@@ -9,14 +9,10 @@ import tcs.bridge.model.Game;
 import tcs.bridge.model.Player;
 
 import java.util.AbstractMap;
+import static tcs.bridge.App.game;
 
 public class FinishedView extends StackPane {
-    private final Game game;
-    private final FinishedController controller;
-
-    public FinishedView(Game game, FinishedController controller) {
-        this.game = game;
-        this.controller = controller;
+    public FinishedView(FinishedController controller) {
         this.setStyle("-fx-background-color: #32442d;");
 
         Label deckResult = new Label();

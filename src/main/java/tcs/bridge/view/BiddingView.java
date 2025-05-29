@@ -18,13 +18,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class BiddingView extends BorderPane {
-    private final Game game;
-    private final BiddingController controller;
+import static tcs.bridge.App.game;
 
-    public BiddingView(Game game, BiddingController controller){
-        this.game = game;
-        this.controller = controller;
+public class BiddingView extends BorderPane {
+    public BiddingView(BiddingController controller){
         this.setStyle("-fx-background-color: #32442d;");
 
         /* SETTING A SCENE FOR A BIDDING */
@@ -69,7 +66,15 @@ public class BiddingView extends BorderPane {
 
         controller.inforamtionRightLabel.setTextAlignment(TextAlignment.CENTER);
         controller.inforamtionRightLabel.setTextFill(Color.BEIGE);
-        controller.inforamtionRightLabel.setStyle("-fx-font-size: 30;");
+        controller.inforamtionRightLabel.setStyle("-fx-font-size: 20;");
+
+        if (App.server != null) {
+            try {
+                controller.inforamtionRightLabel.setText("Port:\n" + App.server.getPort());
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         /* ADDING ALL CARDS TO DECK */
         List<Hand> deal = game.getDeck().deal();

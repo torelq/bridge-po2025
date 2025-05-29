@@ -19,14 +19,11 @@ import tcs.bridge.model.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import static tcs.bridge.App.game;
 
 public class PlayingView extends BorderPane {
-    private final Game game;
-    private final PlayingController controller;
 
-    public PlayingView(Game game, PlayingController controller) {
-        this.game = game;
-        this.controller = controller;
+    public PlayingView(PlayingController controller) {
         this.setStyle("-fx-background-color: #32442d;");
 
 

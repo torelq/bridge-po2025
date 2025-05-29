@@ -13,10 +13,14 @@ import tcs.bridge.view.FinishedView;
 
 import java.util.ArrayList;
 import java.util.List;
+import static tcs.bridge.App.clientMessageStream;
+import static tcs.bridge.App.server;
+import static tcs.bridge.App.stage;
+import static tcs.bridge.App.game;
+import static tcs.bridge.App.myPosition;
+import static tcs.bridge.App.playerNames;
 
 public class PlayingController {
-    private final Stage stage;
-    private final Game game;
 
     public List<Label> labels;
     public StackPane table;
@@ -24,18 +28,14 @@ public class PlayingController {
     public Label inforamtionLeftLabel;
     public Label inforamtionRightLabel;
 
-    public PlayingController(Stage stage, Game game, Label leftLabel, Label rightLabel) {
-        this.stage = stage;
-        this.game = game;
+    public PlayingController(Label leftLabel, Label rightLabel) {
         inforamtionLeftLabel = leftLabel;
         inforamtionRightLabel = rightLabel;
 
-        //TODO: clean this mess
-        Label labelNorth = new Label("NORTH");
-        Label labelEast = new Label("EAST");
-        Label labelSouth = new Label("SOUTH");
-        Label labelWest = new Label("WEST");
-        labels = new ArrayList<>(List.of(labelNorth, labelEast, labelSouth, labelWest));
+        labels = new ArrayList<>();
+        for (Player.Position pos : Player.Position.values()) {
+            labels.add(new Label(pos.name() + "\n" + playerNames.get(pos.ordinal()) + (pos == myPosition ? " (me)" : "")));
+        }
         table = new StackPane();
         playersPanes = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
@@ -81,8 +81,8 @@ public class PlayingController {
     }
 
     public void startFinished(){
-        FinishedController controller = new FinishedController(stage, game);
-        FinishedView view = new FinishedView(game, controller);
+        FinishedController controller = new FinishedController();
+        FinishedView view = new FinishedView(controller);
 
         stage.setTitle("TCS Bridge - FINISHED");
         stage.setScene(new Scene(view, 900, 900));
