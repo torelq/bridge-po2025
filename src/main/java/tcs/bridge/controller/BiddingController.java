@@ -3,13 +3,9 @@ package tcs.bridge.controller;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
 import tcs.bridge.App;
 import tcs.bridge.communication.messages.*;
 import tcs.bridge.communication.streams.ClientMessageStream;
@@ -19,12 +15,14 @@ import tcs.bridge.view.PlayingView;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import static tcs.bridge.App.clientMessageStream;
-import static tcs.bridge.App.server;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static java.lang.Thread.interrupted;
 import static tcs.bridge.App.stage;
 import static tcs.bridge.App.game;
 import static tcs.bridge.App.myPosition;
 import static tcs.bridge.App.playerNames;
+import static tcs.bridge.App.clientMessageStream;
 
 
 public class BiddingController {
@@ -34,9 +32,10 @@ public class BiddingController {
     public GridPane biddingGrid;
     public Label inforamtionLeftLabel;
     public Label inforamtionRightLabel;
+    private final Thread readerTh;
 
     public BiddingController() {
-        Thread readerTh = new Thread(() -> readerThread(App.clientMessageStream));
+        readerTh = new Thread(() -> readerThread());
         readerTh.start();
 
         labels = new ArrayList<>();
@@ -46,9 +45,9 @@ public class BiddingController {
         table = new StackPane();
     }
 
-    private void readerThread(ClientMessageStream clientMessageStream) {
+    private void readerThread() {
         try {
-            while (true) {
+            while (!interrupted()) {
                 ServerToClientMessage message = clientMessageStream.readMessage();
                 System.out.println(message);
                 if (message instanceof JoinGameNotice joinGameNotice){
@@ -72,8 +71,8 @@ public class BiddingController {
                     });
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e){
+            System.out.println("Thread interrupted");
         }
     }
 
@@ -81,7 +80,7 @@ public class BiddingController {
     public void onBidButtonClicked(ActionEvent event, Bidding.Bid bid) {
         if (game.getBidding().canBid(game.getCurrentTurn(), bid)){
             try {
-                App.clientMessageStream.writeMessage(new MakeBidRequest(game.getCurrentTurn(), bid));
+                clientMessageStream.writeMessage(new MakeBidRequest(game.getCurrentTurn(), bid));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -91,14 +90,16 @@ public class BiddingController {
     /* MAKING BIGGER LABEL FOR ACTUAL BIDING PLAYER */
     public void makeTurn(Player.Position position) {
         for (int i = 0; i < labels.size(); i++) {
-            if (Player.Position.values()[i].toString().equals(position.toString()))
-                labels.get(i).setStyle("-fx-font-size: 30");
+            if (Player.Position.values()[i].toString().equals(position.toString())) {
+                labels.get(i).setStyle("-fx-font-size: 20; -fx-font-weight: bold");
+            }
             else
-                labels.get(i).setStyle("-fx-font-size: 15");
+                labels.get(i).setStyle("-fx-font-weight: normal; -fx-font-size: 15");
         }
     }
 
     private void startPlaying(){
+        readerTh.interrupt();
         PlayingController controller = new PlayingController(inforamtionLeftLabel, inforamtionRightLabel);
         PlayingView view = new PlayingView(controller);
 

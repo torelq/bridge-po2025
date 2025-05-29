@@ -49,8 +49,9 @@ public class PlayingView extends BorderPane {
                 else
                     imageView.setTranslateY(translate += 40);
                 int finalI = i;
+                controller.cardImages.put(card, imageView);
                 imageView.setOnMouseClicked(mouseEvent ->
-                        controller.onCardClicked(mouseEvent, card, imageView, finalI));
+                        controller.onCardClicked(mouseEvent, card, finalI));
                 player.getChildren().add(imageView);
             }
             switch (i){

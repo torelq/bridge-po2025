@@ -30,7 +30,6 @@ import static tcs.bridge.App.playerNames;
 
 
 public class PregameController{
-//    private Thread eventThread;
 
     private void readerThread() {
         try {
