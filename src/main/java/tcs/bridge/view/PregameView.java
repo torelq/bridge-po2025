@@ -1,7 +1,5 @@
 package tcs.bridge.view;
 
-import javafx.beans.Observable;
-import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -9,13 +7,13 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
-import tcs.bridge.controller.PregameController;
+import tcs.bridge.controller.Controller;
 import tcs.bridge.model.*;
 
 
 public class PregameView extends StackPane {
 
-    public PregameView(PregameController controller){
+    public PregameView(Controller controller){
         this.setStyle("-fx-background-color: #32442d;");
 
         Button joinButton = new Button("Join");

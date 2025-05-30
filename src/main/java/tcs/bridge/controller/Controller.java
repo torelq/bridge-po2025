@@ -1,0 +1,309 @@
+package tcs.bridge.controller;
+
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import tcs.bridge.communication.messages.*;
+import tcs.bridge.communication.streams.ClientMessageStream;
+import tcs.bridge.communication.streams.TCPMessageStream;
+import tcs.bridge.model.*;
+import tcs.bridge.server.Server;
+import tcs.bridge.view.BiddingView;
+import tcs.bridge.view.FinishedView;
+import tcs.bridge.view.PlayingView;
+
+import java.io.IOException;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static tcs.bridge.App.portNumber;
+import static tcs.bridge.App.server;
+import static tcs.bridge.App.stage;
+import static tcs.bridge.App.game;
+import static tcs.bridge.App.myPosition;
+import static tcs.bridge.App.playerNames;
+import static tcs.bridge.App.clientMessageStream;
+
+
+public class Controller {
+
+    public List<Label> labels;
+    public StackPane table;
+    public GridPane biddingGrid;
+    public Label inforamtionLeftLabel;
+    public Label inforamtionRightLabel;
+    private Thread readerTh;
+    public List<StackPane> playersPanes;
+    public Map<Card, ImageView> cardImages;
+
+    /* PREGAME */
+    public TextField portField;
+    public TextField playerNameField;
+    public Label lblPort;
+    public HBox pregameBox;
+    public ComboBox<Player.Position> positionComboBox;
+
+    public Controller() {
+        labels = new ArrayList<>();
+        for (Player.Position pos : Player.Position.values()) {
+            labels.add(new Label(pos.name() + "\n" + playerNames.get(pos.ordinal()) + (pos == myPosition ? " (me)" : "")));
+        }
+        table = new StackPane();
+        playersPanes = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            playersPanes.add(new StackPane());
+        }
+        cardImages = new HashMap<>();
+    }
+    /* READING MESSAGE THREAD */
+    private void readerThread() {
+        try {
+            while (true) {
+                ServerToClientMessage message = clientMessageStream.readMessage();
+                System.out.println(message);
+
+                if (message instanceof StateRequest.StateResponse) {
+                    game = ((StateRequest.StateResponse) message).game();
+                    myPosition = ((StateRequest.StateResponse) message).myPosition();
+                    if (game.getState() == Game.State.BIDDING) {
+                        Platform.runLater(() -> startBidding());
+                    }
+                    if (game.getState() == Game.State.PLAYING) {
+                        for (Card c : game.getDeck().getCards()) {
+                            System.out.println(c.toString());
+                            if (game.canPlayCard(c))
+                                System.out.println(c.toString() + " is OK");
+                        }
+                    }
+                }
+                if (message instanceof JoinGameNotice joinGameNotice){
+                    playerNames.set(joinGameNotice.position().ordinal(), joinGameNotice.name());
+                    Platform.runLater(() -> {
+                        labels.get(joinGameNotice.position().ordinal()).setText(joinGameNotice.position().name()
+                                + "\n" + playerNames.get(joinGameNotice.position().ordinal())
+                                + (joinGameNotice.position() == myPosition ? " (me)" : ""));
+                    });
+                }
+                if (message instanceof MakeBidNotice) {
+                    Platform.runLater(()->{
+                        Bidding.Bid bid = ((MakeBidNotice) message).bid();
+                        game.makeBid(bid);
+                        if (!bid.isSpecial())
+                            inforamtionLeftLabel.setText(bid.toString());
+                        makeTurn(game.getCurrentTurn());
+                        if (game.getState() == Game.State.PLAYING){
+                            startPlaying();
+                        }
+                    });
+                }
+                if (message instanceof PlayCardNotice) {
+                    Platform.runLater(()->{
+                        Card card = ((PlayCardNotice) message).card();
+                        int position = ((PlayCardNotice) message).position().ordinal();
+                        System.out.println("Playing card " + card.toString() + " " + position);
+                        System.out.println(game.getState() + " " + game.getCurrentTurn() + " " + game.getCurrentTrick());
+                        for (Card c : game.getDeck().getCards()){
+                            System.out.println(c.toString());
+                            if (game.canPlayCard(c))
+                                System.out.println(c.toString() + " is OK");
+                        }
+
+                        ImageView imageView = cardImages.get(card);
+                        if (game.playCard(card)){ //TODO: dlaczego to nie dziala?
+                            if (game.getNumberOfPlayedCards() % 4 == 1)
+                                table.getChildren().clear();
+                            playersPanes.get(position).getChildren().remove(imageView);
+                            imageView.setTranslateX(0); imageView.setTranslateY(0);
+                            switch (position) {
+                                case 0: imageView.setTranslateY(-50); break;
+                                case 1: imageView.setTranslateX(50); break;
+                                case 2: imageView.setTranslateY(50); break;
+                                case 3: imageView.setTranslateX(-50); break;
+                            }
+                            table.getChildren().add(imageView);
+                            if (game.getState() == Game.State.FINISHED){
+                                startFinished();
+                            }
+                            makeTurnPlaying(game.getCurrentTurn());
+                        }
+                        else {
+                            System.out.println("Playing card FAILED.");
+                        }
+                    });
+                }
+            }
+        } catch (Exception e){
+            System.out.println("Thread interrupted");
+            e.printStackTrace();
+        }
+    }
+
+    /*
+    *
+    *  PREGAME
+    *
+    * */
+
+    public void onClickJoin(ActionEvent event){
+        try{
+            clientMessageStream = new ClientMessageStream(new TCPMessageStream(
+                    new Socket("127.0.0.1", Integer.parseInt(portField.getText()))));
+            readerTh = new Thread(() -> readerThread());
+            readerTh.start();
+
+            portNumber = Integer.parseInt(portField.getText());
+            pregameBox.getChildren().clear();
+            pregameBox.getChildren().add(lblPort);
+            lblPort.setText("Waiting for other players to join");
+        }
+        catch(Exception e){
+            lblPort.setText("Port not reachable, try again:");
+            return;
+        }
+        joinGame();
+    }
+
+    public void onClickSetServer(ActionEvent event) {
+        server = new Server();
+        server.setVerbose(true); // TODO: usunac
+        server.runInNewThread();
+        pregameBox.getChildren().clear();
+        try{
+            clientMessageStream = new ClientMessageStream(new TCPMessageStream(
+                    new Socket("127.0.0.1", server.getPort())));
+            Thread readerTh = new Thread(() -> readerThread());
+            readerTh.start();
+
+            lblPort.setText("Waiting for other players to join\n\nPORT:   " + server.getPort());
+            portNumber = server.getPort();
+        }
+        catch(Exception e){
+            lblPort.setText("INTERRUPTED");
+        }
+        pregameBox.getChildren().add(lblPort);
+        joinGame();
+    }
+
+    private void joinGame(){
+        String name = playerNameField.getText();
+        Player.Position position = positionComboBox.getValue();
+        try {
+            clientMessageStream.writeMessage(new JoinGameRequest(name, position));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            clientMessageStream.writeMessage(new StateRequest());
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        };
+    }
+
+    /*
+     *
+     *  BIDDING
+     *
+     * */
+
+    /* BIDDING AND CHECKING IF END OF BIDDING */
+    public void onBidButtonClicked(ActionEvent event, Bidding.Bid bid) {
+        if (game.getBidding().canBid(game.getCurrentTurn(), bid)){
+            try {
+                clientMessageStream.writeMessage(new MakeBidRequest(game.getCurrentTurn(), bid));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /* MAKING BIGGER LABEL FOR ACTUAL BIDING PLAYER */
+    public void makeTurn(Player.Position position) {
+        for (int i = 0; i < labels.size(); i++) {
+            if (Player.Position.values()[i].toString().equals(position.toString())) {
+                labels.get(i).setStyle("-fx-font-size: 20; -fx-font-weight: bold");
+            }
+            else
+                labels.get(i).setStyle("-fx-font-weight: normal; -fx-font-size: 15");
+        }
+    }
+
+    /*
+     *
+     *  PLAYING
+     *
+     * */
+
+    /* MAKING BIGGER LABEL FOR ACTUAL PLAYING PLAYER AND COUNTING GAINED TRICKS */
+    public void makeTurnPlaying(Player.Position position) {
+        for (int i = 0; i < labels.size(); i++) {
+            Player.Position pos = Player.Position.values()[i];
+            int gainedTricks;
+            if (game.getPlayers().get(pos).getPosition() == game.getContract().getDeclarer()
+                    || game.getPlayers().get(pos).getPosition() == game.getContract().getDummy())
+                gainedTricks = game.getGainedTricks();
+            else
+                gainedTricks = game.getCompleteTricks().size() - game.getGainedTricks();
+            labels.get(i).setText(pos.toString() + " " + gainedTricks + "\n" +
+                    playerNames.get(i) + (pos == myPosition ? " (me)" : "")
+            );
+            makeTurn(position);
+        }
+    }
+
+    /* PLYING CARDS AND CHECKING IF FINISHED */
+    public void onCardClicked(MouseEvent event, Card card, int position) {
+        Player.Position pos = Player.Position.values()[position];
+        if (pos == myPosition
+                || myPosition == game.getContract().getDeclarer() && pos == game.getContract().getDummy()
+        ) {
+            try {
+                clientMessageStream.writeMessage(new PlayCardRequest(pos, card));
+            } catch (IOException e) {
+                System.out.println("IO Exception in PlayingController.onCardClicked");
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /* CHANGE STATE OF GAME */
+    private void startBidding() {
+        BiddingView view = new BiddingView(this);
+
+        stage.setTitle("TCS Bridge - BIDDING");
+        stage.setScene(new Scene(view, 900, 900));
+        stage.show();
+    }
+
+    private void startPlaying(){
+        PlayingView view = new PlayingView(this);
+
+        stage.setTitle("TCS Bridge - PLAYING");
+        stage.setScene(new Scene(view, 900, 900));
+        stage.show();
+
+        try {
+            clientMessageStream.writeMessage(new StateRequest());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void startFinished(){
+        FinishedView view = new FinishedView(this);
+
+        stage.setTitle("TCS Bridge - FINISHED");
+        stage.setScene(new Scene(view, 900, 900));
+        stage.show();
+    }
+}

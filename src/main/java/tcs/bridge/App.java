@@ -4,13 +4,12 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import tcs.bridge.communication.streams.ClientMessageStream;
-import tcs.bridge.controller.PregameController;
+import tcs.bridge.controller.Controller;
 import tcs.bridge.model.Game;
 import tcs.bridge.model.Player;
 import tcs.bridge.server.Server;
 import tcs.bridge.view.PregameView;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +20,7 @@ public class App extends Application {
     static public Stage stage;
     static public Player.Position myPosition;
     static public ArrayList<String> playerNames;
+    static public int portNumber;
 
 
     public static void main(String[] args) {
@@ -29,11 +29,10 @@ public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        game = new Game();
         stage = primaryStage;
         playerNames = new ArrayList<>(List.of("", "", "", ""));
 
-        PregameController controller = new PregameController();
+        Controller controller = new Controller();
         PregameView view = new PregameView(controller);
 
         stage.setTitle("TCS Bridge - PREGAME");
@@ -46,7 +45,8 @@ public class App extends Application {
         if (clientMessageStream != null) {
             try {
                 clientMessageStream.close();
-            } catch (IOException e) {
+                Thread.sleep(100);
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }

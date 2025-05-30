@@ -27,10 +27,12 @@ import static tcs.bridge.App.stage;
 import static tcs.bridge.App.game;
 import static tcs.bridge.App.myPosition;
 import static tcs.bridge.App.playerNames;
+import static tcs.bridge.App.portNumber;
 
 
+@Deprecated
 public class PregameController{
-
+    Thread readerTh;
     private void readerThread() {
         try {
             while (true) {
@@ -53,6 +55,7 @@ public class PregameController{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("PregameController reader thread exit");
     }
 
 
@@ -66,10 +69,10 @@ public class PregameController{
         try{
             clientMessageStream = new ClientMessageStream(new TCPMessageStream(
                     new Socket("127.0.0.1", Integer.parseInt(portField.getText()))));
-            Thread readerTh = new Thread(() -> readerThread());
+            readerTh = new Thread(() -> readerThread());
             readerTh.start();
 
-
+            portNumber = Integer.parseInt(portField.getText());
             pregameBox.getChildren().clear();
             pregameBox.getChildren().add(lblPort);
             lblPort.setText("Waiting for other players to join");
@@ -93,6 +96,7 @@ public class PregameController{
             readerTh.start();
 
             lblPort.setText("Waiting for other players to join\n\nPORT:   " + server.getPort());
+            portNumber = server.getPort();
         }
         catch(Exception e){
             lblPort.setText("INTERRUPTED");
@@ -116,9 +120,9 @@ public class PregameController{
         };
     }
 
-    private void startBidding(Game serverGame){
+    private void startBidding(Game serverGame) {
         game = serverGame;
-        BiddingController controller = new BiddingController();
+        Controller controller = new Controller();
         BiddingView view = new BiddingView(controller);
 
         stage.setTitle("TCS Bridge - BIDDING");

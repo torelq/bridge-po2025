@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 import tcs.bridge.App;
 import tcs.bridge.communication.messages.*;
 import tcs.bridge.communication.streams.ClientMessageStream;
+import tcs.bridge.communication.streams.TCPMessageStream;
 import tcs.bridge.model.Bidding;
 import tcs.bridge.model.Card;
 import tcs.bridge.model.Game;
@@ -17,6 +18,7 @@ import tcs.bridge.model.Player;
 import tcs.bridge.view.FinishedView;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +31,9 @@ import static tcs.bridge.App.stage;
 import static tcs.bridge.App.game;
 import static tcs.bridge.App.myPosition;
 import static tcs.bridge.App.playerNames;
+import static tcs.bridge.App.portNumber;
 
+@Deprecated
 public class PlayingController {
 
     public List<Label> labels;
@@ -40,8 +44,20 @@ public class PlayingController {
     public Map<Card, ImageView> cardImages;
 
     public PlayingController(Label leftLabel, Label rightLabel) {
+        try {
+            clientMessageStream = new ClientMessageStream(new TCPMessageStream(
+                    new Socket("127.0.0.1", portNumber)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         Thread readerTh = new Thread(() -> readerThread());
         readerTh.start();
+        try {
+            clientMessageStream.writeMessage(new JoinGameRequest(playerNames.get(myPosition.ordinal()), myPosition));
+//            clientMessageStream.writeMessage(new StateRequest());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         inforamtionLeftLabel = leftLabel;
         inforamtionRightLabel = rightLabel;
 
@@ -64,6 +80,10 @@ public class PlayingController {
                 System.out.println("Waiting for Playing message...");
                 ServerToClientMessage message = clientMessageStream.readMessage();
                 System.out.println(message);
+//                if (message instanceof StateRequest.StateResponse) {
+//                    game = ((StateRequest.StateResponse) message).game();
+//                    myPosition = ((StateRequest.StateResponse) message).myPosition();
+//                }
                 if (message instanceof JoinGameNotice joinGameNotice){
                     playerNames.set(joinGameNotice.position().ordinal(), joinGameNotice.name());
                     Platform.runLater(() -> {
@@ -73,11 +93,19 @@ public class PlayingController {
                     });
                 }
                 if (message instanceof PlayCardNotice) {
-                    Card card = ((PlayCardNotice) message).card();
-                    int position = ((PlayCardNotice) message).position().ordinal();
                     Platform.runLater(()->{
+                        Card card = ((PlayCardNotice) message).card();
+                        int position = ((PlayCardNotice) message).position().ordinal();
+                        System.out.println("Playing card " + card.toString() + " " + position);
+                        System.out.println(game.getState() + " " + game.getCurrentTurn() + " " + game.getCurrentTrick());
+                        for (Card c : game.getDeck().getCards()){
+                            System.out.println(c.toString());
+                            if (game.canPlayCard(c))
+                                System.out.println(c.toString() + " is OK");
+                        }
+
                         ImageView imageView = cardImages.get(card);
-                        if (game.playCard(card)){
+                        if (game.playCard(card)){ //TODO: dlaczego to nie dziala?
                             if (game.getNumberOfPlayedCards() % 4 == 1)
                                 table.getChildren().clear();
                             playersPanes.get(position).getChildren().remove(imageView);
@@ -95,6 +123,9 @@ public class PlayingController {
                             }
                             makeTurn(game.getCurrentTurn());
                         }
+                        else {
+                            System.out.println("Playing card FAILED.");
+                        }
                     });
                 }
             }
@@ -105,12 +136,16 @@ public class PlayingController {
 
     /* PLYING CARDS AND CHECKING IF FINISHED */
     public void onCardClicked(MouseEvent event, Card card, int position) {
-        try {
-            Player.Position pos = Player.Position.values()[position];
-            clientMessageStream.writeMessage(new PlayCardRequest(pos, card));
-        } catch (IOException e) {
-            System.out.println("IO Exception in PlayingController.onCardClicked");
-            throw new RuntimeException(e);
+        Player.Position pos = Player.Position.values()[position];
+        if (pos == myPosition
+                || myPosition == game.getContract().getDeclarer() && pos == game.getContract().getDummy()
+        ) {
+            try {
+                clientMessageStream.writeMessage(new PlayCardRequest(pos, card));
+            } catch (IOException e) {
+                System.out.println("IO Exception in PlayingController.onCardClicked");
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -135,11 +170,5 @@ public class PlayingController {
     }
 
     public void startFinished(){
-        FinishedController controller = new FinishedController();
-        FinishedView view = new FinishedView(controller);
-
-        stage.setTitle("TCS Bridge - FINISHED");
-        stage.setScene(new Scene(view, 900, 900));
-        stage.show();
     }
 }

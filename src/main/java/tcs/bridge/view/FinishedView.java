@@ -4,15 +4,14 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
-import tcs.bridge.controller.FinishedController;
-import tcs.bridge.model.Game;
+import tcs.bridge.controller.Controller;
 import tcs.bridge.model.Player;
 
 import java.util.AbstractMap;
 import static tcs.bridge.App.game;
 
 public class FinishedView extends StackPane {
-    public FinishedView(FinishedController controller) {
+    public FinishedView(Controller controller) {
         this.setStyle("-fx-background-color: #32442d;");
 
         Label deckResult = new Label();

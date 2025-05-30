@@ -1,27 +1,23 @@
 package tcs.bridge.view;
 
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import tcs.bridge.App;
-import tcs.bridge.controller.BiddingController;
-import tcs.bridge.controller.PregameController;
+import tcs.bridge.controller.Controller;
 import tcs.bridge.model.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static tcs.bridge.App.game;
 
 public class BiddingView extends BorderPane {
-    public BiddingView(BiddingController controller){
+    public BiddingView(Controller controller){
         this.setStyle("-fx-background-color: #32442d;");
 
         /* SETTING A SCENE FOR A BIDDING */

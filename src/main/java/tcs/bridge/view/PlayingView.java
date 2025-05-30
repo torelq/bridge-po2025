@@ -1,29 +1,23 @@
 package tcs.bridge.view;
 
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
-import javafx.stage.Stage;
 import tcs.bridge.App;
-import tcs.bridge.controller.PlayingController;
+import tcs.bridge.controller.Controller;
 import tcs.bridge.model.Card;
-import tcs.bridge.model.Game;
 import tcs.bridge.model.Hand;
-import tcs.bridge.model.Player;
 
-import java.util.ArrayList;
 import java.util.List;
 import static tcs.bridge.App.game;
 
 public class PlayingView extends BorderPane {
 
-    public PlayingView(PlayingController controller) {
+    public PlayingView(Controller controller) {
         this.setStyle("-fx-background-color: #32442d;");
 
 
