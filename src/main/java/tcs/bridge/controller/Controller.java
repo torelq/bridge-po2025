@@ -37,13 +37,12 @@ import static tcs.bridge.App.clientMessageStream;
 
 
 public class Controller {
-
+    /* BIDDING AND PLAYING */
     public List<Label> labels;
     public StackPane table;
     public GridPane biddingGrid;
     public Label inforamtionLeftLabel;
     public Label inforamtionRightLabel;
-    private Thread readerTh;
     public List<StackPane> playersPanes;
     public Map<Card, ImageView> cardImages;
 
@@ -73,20 +72,31 @@ public class Controller {
                 ServerToClientMessage message = clientMessageStream.readMessage();
                 System.out.println(message);
 
-                if (message instanceof StateRequest.StateResponse) {
-                    game = ((StateRequest.StateResponse) message).game();
-                    myPosition = ((StateRequest.StateResponse) message).myPosition();
-                    if (game.getState() == Game.State.BIDDING) {
-                        Platform.runLater(() -> startBidding());
-                    }
-                    if (game.getState() == Game.State.PLAYING) {
-                        for (Card c : game.getDeck().getCards()) {
-                            System.out.println(c.toString());
-                            if (game.canPlayCard(c))
-                                System.out.println(c.toString() + " is OK");
-                        }
+                /* GETTING GAME FROM SERVER BEFORE BIDDING */
+                if (message instanceof StateRequest.StateResponse stateResponse) {
+                    myPosition = stateResponse.myPosition();
+                    if (myPosition != null)
+                        labels.get(myPosition.ordinal()).setText(myPosition.name()
+                                + "\n" + playerNames.get(myPosition.ordinal())
+                                + " (me)");
+                    if (game == null){
+                        // TODO: gleboka kopia?
+                        Game serverGame = stateResponse.game();
+                        List<Hand> hands = serverGame.getDeck().deal();
+                        game = new Game();
+                        game.joinGame(serverGame.getPlayers().get(Player.Position.NORTH));
+                        game.joinGame(serverGame.getPlayers().get(Player.Position.EAST));
+                        game.joinGame(serverGame.getPlayers().get(Player.Position.SOUTH));
+                        game.joinGame(serverGame.getPlayers().get(Player.Position.WEST));
+                        game.setDeck(serverGame.getDeck());
+                        game.getPlayers().get(Player.Position.NORTH).setHand(hands.get(0));
+                        game.getPlayers().get(Player.Position.EAST).setHand(hands.get(1));
+                        game.getPlayers().get(Player.Position.SOUTH).setHand(hands.get(2));
+                        game.getPlayers().get(Player.Position.WEST).setHand(hands.get(3));
+                        Platform.runLater(this::startBidding);
                     }
                 }
+                /* JOIN GAME AND SETTING MY NAME AND POSITION */
                 if (message instanceof JoinGameNotice joinGameNotice){
                     playerNames.set(joinGameNotice.position().ordinal(), joinGameNotice.name());
                     Platform.runLater(() -> {
@@ -95,9 +105,10 @@ public class Controller {
                                 + (joinGameNotice.position() == myPosition ? " (me)" : ""));
                     });
                 }
-                if (message instanceof MakeBidNotice) {
+                /* MAKING BID */
+                if (message instanceof MakeBidNotice makeBidNotice) {
                     Platform.runLater(()->{
-                        Bidding.Bid bid = ((MakeBidNotice) message).bid();
+                        Bidding.Bid bid = makeBidNotice.bid();
                         game.makeBid(bid);
                         if (!bid.isSpecial())
                             inforamtionLeftLabel.setText(bid.toString());
@@ -107,20 +118,13 @@ public class Controller {
                         }
                     });
                 }
-                if (message instanceof PlayCardNotice) {
+                /* PLAYING CARD - MOVING TO THE CENTER */
+                if (message instanceof PlayCardNotice playCardNotice) {
                     Platform.runLater(()->{
-                        Card card = ((PlayCardNotice) message).card();
-                        int position = ((PlayCardNotice) message).position().ordinal();
-                        System.out.println("Playing card " + card.toString() + " " + position);
-                        System.out.println(game.getState() + " " + game.getCurrentTurn() + " " + game.getCurrentTrick());
-                        for (Card c : game.getDeck().getCards()){
-                            System.out.println(c.toString());
-                            if (game.canPlayCard(c))
-                                System.out.println(c.toString() + " is OK");
-                        }
-
+                        Card card = playCardNotice.card();
+                        int position = playCardNotice.position().ordinal();
                         ImageView imageView = cardImages.get(card);
-                        if (game.playCard(card)){ //TODO: dlaczego to nie dziala?
+                        if (game.playCard(card)){
                             if (game.getNumberOfPlayedCards() % 4 == 1)
                                 table.getChildren().clear();
                             playersPanes.get(position).getChildren().remove(imageView);
@@ -144,7 +148,7 @@ public class Controller {
                 }
             }
         } catch (Exception e){
-            System.out.println("Thread interrupted");
+            System.out.println("Reader Thread interrupted");
             e.printStackTrace();
         }
     }
@@ -155,11 +159,12 @@ public class Controller {
     *
     * */
 
+    /* JOIN TO GAME ON ENTERED PORT NUMBER */
     public void onClickJoin(ActionEvent event){
         try{
             clientMessageStream = new ClientMessageStream(new TCPMessageStream(
                     new Socket("127.0.0.1", Integer.parseInt(portField.getText()))));
-            readerTh = new Thread(() -> readerThread());
+            Thread readerTh = new Thread(this::readerThread);
             readerTh.start();
 
             portNumber = Integer.parseInt(portField.getText());
@@ -174,15 +179,16 @@ public class Controller {
         joinGame();
     }
 
+    /* SETTING A SERVER AND JOINING GAME */
     public void onClickSetServer(ActionEvent event) {
         server = new Server();
-        server.setVerbose(true); // TODO: usunac
+        server.setVerbose(true);
         server.runInNewThread();
         pregameBox.getChildren().clear();
         try{
             clientMessageStream = new ClientMessageStream(new TCPMessageStream(
                     new Socket("127.0.0.1", server.getPort())));
-            Thread readerTh = new Thread(() -> readerThread());
+            Thread readerTh = new Thread(this::readerThread);
             readerTh.start();
 
             lblPort.setText("Waiting for other players to join\n\nPORT:   " + server.getPort());
@@ -194,7 +200,7 @@ public class Controller {
         pregameBox.getChildren().add(lblPort);
         joinGame();
     }
-
+    /* JOIN GAME */
     private void joinGame(){
         String name = playerNameField.getText();
         Player.Position position = positionComboBox.getValue();
@@ -291,7 +297,8 @@ public class Controller {
         stage.setTitle("TCS Bridge - PLAYING");
         stage.setScene(new Scene(view, 900, 900));
         stage.show();
-
+        table.getChildren().clear();
+        inforamtionLeftLabel.setText(inforamtionLeftLabel.getText() + "\n" + game.getContract().getDeclarer().name());
         try {
             clientMessageStream.writeMessage(new StateRequest());
         } catch (IOException e) {

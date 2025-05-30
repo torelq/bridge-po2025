@@ -104,6 +104,11 @@ public class Game implements Serializable {
         players.get(Position.WEST).setHand(hands.get(3));
     }
 
+    public void setDeck(Deck deck) {
+        this.deck.getCards().clear();
+        this.deck.getCards().addAll(deck.getCards());
+    }
+
     public boolean canPlayCard(Card card) {
         if (state != State.PLAYING) {
             throw new IllegalArgumentException("Game is not in playing state");
