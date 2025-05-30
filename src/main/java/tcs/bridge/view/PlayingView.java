@@ -1,32 +1,23 @@
 package tcs.bridge.view;
 
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
-import javafx.stage.Stage;
 import tcs.bridge.App;
-import tcs.bridge.controller.PlayingController;
+import tcs.bridge.controller.Controller;
 import tcs.bridge.model.Card;
-import tcs.bridge.model.Game;
 import tcs.bridge.model.Hand;
-import tcs.bridge.model.Player;
 
-import java.util.ArrayList;
 import java.util.List;
+import static tcs.bridge.App.game;
 
 public class PlayingView extends BorderPane {
-    private final Game game;
-    private final PlayingController controller;
 
-    public PlayingView(Game game, PlayingController controller) {
-        this.game = game;
-        this.controller = controller;
+    public PlayingView(Controller controller) {
         this.setStyle("-fx-background-color: #32442d;");
 
 
@@ -52,8 +43,9 @@ public class PlayingView extends BorderPane {
                 else
                     imageView.setTranslateY(translate += 40);
                 int finalI = i;
+                controller.cardImages.put(card, imageView);
                 imageView.setOnMouseClicked(mouseEvent ->
-                        controller.onCardClicked(mouseEvent, card, imageView, finalI));
+                        controller.onCardClicked(mouseEvent, card, finalI));
                 player.getChildren().add(imageView);
             }
             switch (i){
