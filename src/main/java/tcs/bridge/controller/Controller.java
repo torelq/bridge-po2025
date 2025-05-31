@@ -1,8 +1,16 @@
 package tcs.bridge.controller;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -11,29 +19,33 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import tcs.bridge.communication.messages.*;
+import static tcs.bridge.App.clientMessageStream;
+import static tcs.bridge.App.game;
+import static tcs.bridge.App.myPosition;
+import static tcs.bridge.App.playerNames;
+import static tcs.bridge.App.portNumber;
+import static tcs.bridge.App.server;
+import static tcs.bridge.App.stage;
+import tcs.bridge.communication.messages.JoinGameNotice;
+import tcs.bridge.communication.messages.JoinGameRequest;
+import tcs.bridge.communication.messages.MakeBidNotice;
+import tcs.bridge.communication.messages.MakeBidRequest;
+import tcs.bridge.communication.messages.PlayCardNotice;
+import tcs.bridge.communication.messages.PlayCardRequest;
+import tcs.bridge.communication.messages.ServerToClientMessage;
+import tcs.bridge.communication.messages.StateRequest;
 import tcs.bridge.communication.streams.ClientMessageStream;
 import tcs.bridge.communication.streams.TCPMessageStream;
-import tcs.bridge.model.*;
+import tcs.bridge.model.Bidding;
+import tcs.bridge.model.Card;
+import tcs.bridge.model.Game;
+import tcs.bridge.model.Hand;
+import tcs.bridge.model.Player;
+import tcs.bridge.model.Suit;
 import tcs.bridge.server.Server;
 import tcs.bridge.view.BiddingView;
 import tcs.bridge.view.FinishedView;
 import tcs.bridge.view.PlayingView;
-
-import java.io.IOException;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static tcs.bridge.App.portNumber;
-import static tcs.bridge.App.server;
-import static tcs.bridge.App.stage;
-import static tcs.bridge.App.game;
-import static tcs.bridge.App.myPosition;
-import static tcs.bridge.App.playerNames;
-import static tcs.bridge.App.clientMessageStream;
 
 
 public class Controller {
@@ -113,6 +125,7 @@ public class Controller {
                         if (!bid.isSpecial())
                             inforamtionLeftLabel.setText(bid.toString());
                         makeTurn(game.getCurrentTurn());
+                        updateBiddingGridColors();
                         if (game.getState() == Game.State.PLAYING){
                             startPlaying();
                         }
@@ -229,6 +242,23 @@ public class Controller {
                 clientMessageStream.writeMessage(new MakeBidRequest(game.getCurrentTurn(), bid));
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /* UPDATE THE GRID TO SHOW ONLY AVAILABLE BIDS */
+    public void updateBiddingGridColors() {
+        List<Suit> suits = new ArrayList<>(List.of(Suit.values()));
+        suits.add(Suit.NO_TRUMP);
+        for (int level = 1; level <= 7; level++) {
+            for (int col = 0; col < suits.size(); col++) {
+                Bidding.Bid bid = new Bidding.Bid(level, suits.get(col));
+                Button button = (Button) biddingGrid.getChildren().get((level - 1) * suits.size() + col);
+                if (game.getBidding().getAvailableBids().contains(bid)) {
+                    button.setStyle("-fx-background-color:rgb(55, 255, 0);");
+                } else {
+                    button.setStyle("-fx-background-color:rgb(255, 0, 0);");
+                }
             }
         }
     }

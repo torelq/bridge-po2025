@@ -1,20 +1,25 @@
 package tcs.bridge.view;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import tcs.bridge.App;
-import tcs.bridge.controller.Controller;
-import tcs.bridge.model.*;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static tcs.bridge.App.game;
+import tcs.bridge.controller.Controller;
+import tcs.bridge.model.Bidding;
+import tcs.bridge.model.Card;
+import tcs.bridge.model.Hand;
+import tcs.bridge.model.Suit;
 
 public class BiddingView extends BorderPane {
     public BiddingView(Controller controller){
@@ -37,6 +42,7 @@ public class BiddingView extends BorderPane {
             for (Suit suit : suits) {
                 Bidding.Bid bid = new Bidding.Bid(level, suit);
                 Button button = new Button(bid.toString());
+                button.setStyle("-fx-background-color:rgb(55, 255, 0);");
                 button.setOnAction(e -> controller.onBidButtonClicked(e, bid));
                 controller.biddingGrid.add(button, col, row);
                 col++;
