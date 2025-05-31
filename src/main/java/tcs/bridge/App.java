@@ -1,5 +1,8 @@
 package tcs.bridge;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -9,9 +12,6 @@ import tcs.bridge.model.Game;
 import tcs.bridge.model.Player;
 import tcs.bridge.server.Server;
 import tcs.bridge.view.PregameView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class App extends Application {
     static public Server server;
@@ -53,5 +53,9 @@ public class App extends Application {
         if (App.server != null) {
             App.server.shutdown();
         }
+    }
+
+    public Player.Position getMyPosition() {
+        return myPosition;
     }
 }
