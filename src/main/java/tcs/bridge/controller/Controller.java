@@ -14,6 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
@@ -26,6 +27,8 @@ import static tcs.bridge.App.playerNames;
 import static tcs.bridge.App.portNumber;
 import static tcs.bridge.App.server;
 import static tcs.bridge.App.stage;
+
+import tcs.bridge.App;
 import tcs.bridge.communication.messages.JoinGameNotice;
 import tcs.bridge.communication.messages.JoinGameRequest;
 import tcs.bridge.communication.messages.MakeBidNotice;
@@ -61,7 +64,9 @@ public class Controller {
     /* PREGAME */
     public TextField portField;
     public TextField playerNameField;
+    public TextField hostField;
     public Label lblPort;
+    public Label lblHost;
     public HBox pregameBox;
     public ComboBox<Player.Position> positionComboBox;
 
@@ -141,6 +146,10 @@ public class Controller {
                             if (game.getNumberOfPlayedCards() % 4 == 1)
                                 table.getChildren().clear();
                             playersPanes.get(position).getChildren().remove(imageView);
+                            imageView.setImage(new Image(String.valueOf(App.class.
+                                    getResource("/tcs/bridge/view/cards/" +
+                                            card.getSuit().getName().toLowerCase() +
+                                            "_" + card.getRank().getName() + ".png"))));
                             imageView.setTranslateX(0); imageView.setTranslateY(0);
                             switch (position) {
                                 case 0: imageView.setTranslateY(-50); break;
@@ -176,7 +185,7 @@ public class Controller {
     public void onClickJoin(ActionEvent event){
         try{
             clientMessageStream = new ClientMessageStream(new TCPMessageStream(
-                    new Socket("127.0.0.1", Integer.parseInt(portField.getText()))));
+                    new Socket(hostField.getText(), Integer.parseInt(portField.getText()))));
             Thread readerTh = new Thread(this::readerThread);
             readerTh.start();
 
@@ -200,7 +209,7 @@ public class Controller {
         pregameBox.getChildren().clear();
         try{
             clientMessageStream = new ClientMessageStream(new TCPMessageStream(
-                    new Socket("127.0.0.1", server.getPort())));
+                    new Socket(hostField.getText(), server.getPort())));
             Thread readerTh = new Thread(this::readerThread);
             readerTh.start();
 

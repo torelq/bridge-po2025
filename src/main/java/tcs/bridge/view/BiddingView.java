@@ -86,10 +86,12 @@ public class BiddingView extends BorderPane {
             int translate = -283;
             List<Card> cards = deal.get(i).getCards();
             for (Card card : cards) {
-                ImageView imageView = new ImageView(String.valueOf(App.class.
-                        getResource("/tcs/bridge/view/cards/" +
-                                card.getSuit().getName().toLowerCase() + "_" + card.getRank().getName() + ".png")));
-                if (i != App.myPosition.ordinal()) {
+                ImageView imageView;
+                if (i == App.myPosition.ordinal()) {
+                    imageView = new ImageView(String.valueOf(App.class.
+                            getResource("/tcs/bridge/view/cards/" +
+                                    card.getSuit().getName().toLowerCase() + "_" + card.getRank().getName() + ".png")));
+                } else { //(i != App.myPosition.ordinal())
                     imageView = new ImageView(String.valueOf(App.class.
                             getResource("/tcs/bridge/view/cards/back_bic.png")));
                 }

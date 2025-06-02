@@ -33,9 +33,15 @@ public class PlayingView extends BorderPane {
             int translate = -283;
             List<Card> cards = deal.get(i).getCards();
             for (Card card : cards) {
-                ImageView imageView = new ImageView(String.valueOf(App.class.
-                        getResource("/tcs/bridge/view/cards/" +
-                                card.getSuit().getName().toLowerCase() + "_" + card.getRank().getName() + ".png")));
+                ImageView imageView;
+                if (i == App.myPosition.ordinal() || i == game.getContract().getDummy().ordinal()) {
+                    imageView = new ImageView(String.valueOf(App.class.
+                            getResource("/tcs/bridge/view/cards/" +
+                                    card.getSuit().getName().toLowerCase() + "_" + card.getRank().getName() + ".png")));
+                } else { //(i != App.myPosition.ordinal())
+                    imageView = new ImageView(String.valueOf(App.class.
+                            getResource("/tcs/bridge/view/cards/back_bic.png")));
+                }
                 imageView.setFitWidth(96.8);
                 imageView.setFitHeight(136);
                 if (i == 0 || i == 2)
