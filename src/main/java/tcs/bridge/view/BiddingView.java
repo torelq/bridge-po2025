@@ -91,7 +91,7 @@ public class BiddingView extends BorderPane {
                                 card.getSuit().getName().toLowerCase() + "_" + card.getRank().getName() + ".png")));
                 if (i != App.myPosition.ordinal()) {
                     imageView = new ImageView(String.valueOf(App.class.
-                            getResource("/tcs/bridge/view/cards/back_dark.png")));
+                            getResource("/tcs/bridge/view/cards/back_bic.png")));
                 }
                 imageView.setFitWidth(96.8);
                 imageView.setFitHeight(136);
