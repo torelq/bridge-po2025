@@ -77,8 +77,7 @@ public class Bidding implements Serializable {
             if (suit == Suit.NO_TRUMP) {
                 return level + " NT";
             }
-            String[] suits = {"♦", "♣", "♥", "♠"};
-            return level + " " + suits[suit.ordinal()];
+            return level + " " + Suit.abbreviationOf(suit);
         }
         @Override
         public boolean equals(Object o) {

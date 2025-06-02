@@ -35,7 +35,7 @@ public class BiddingView extends BorderPane {
         controller.biddingGrid.setVgap(10);
 
         int row = 0;
-        List<Suit> suits = new ArrayList<>(List.of(Suit.values()));
+        List<Suit> suits = new ArrayList<>(List.of(Suit.values()[1], Suit.values()[0], Suit.values()[2], Suit.values()[3]));
         suits.add(Suit.NO_TRUMP);
         for (int level = 1; level <= 7; level++) {
             int col = 0;

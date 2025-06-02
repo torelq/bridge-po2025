@@ -248,7 +248,7 @@ public class Controller {
 
     /* UPDATE THE GRID TO SHOW ONLY AVAILABLE BIDS */
     public void updateBiddingGridColors() {
-        List<Suit> suits = new ArrayList<>(List.of(Suit.values()));
+        List<Suit> suits = new ArrayList<>(List.of(Suit.values()[1], Suit.values()[0], Suit.values()[2], Suit.values()[3]));
         suits.add(Suit.NO_TRUMP);
         for (int level = 1; level <= 7; level++) {
             for (int col = 0; col < suits.size(); col++) {
