@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static tcs.bridge.model.Bidding.Bid.PASS_BID;
+
 public class Bidding implements Serializable {
 
     public static class Bid implements Serializable {
@@ -170,7 +172,19 @@ public class Bidding implements Serializable {
                 bids.add(trumpBid);
             }
         }
-        bids.sort((bid1, bid2) -> bid1.isGreaterThan(bid2) ? -1 : 1);
+        if (isFinished) return bids;
+        for (Bid.SpecialBid sp : Bid.SpecialBid.values()) {
+            Bid bid = new Bid(0, null, sp);
+            if (bid_history.isEmpty()) {
+                if (sp == PASS_BID.special) {
+                    bids.add(bid);
+                }
+            } else {
+                if (canBid(Player.Position.next(bid_history.get(bid_history.size()-1).getKey()), bid)) {
+                    bids.add(bid);
+                }
+            }
+        }
         return bids;
     }
 

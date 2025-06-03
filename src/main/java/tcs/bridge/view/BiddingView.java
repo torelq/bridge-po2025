@@ -42,7 +42,6 @@ public class BiddingView extends BorderPane {
             for (Suit suit : suits) {
                 Bidding.Bid bid = new Bidding.Bid(level, suit);
                 Button button = new Button(bid.toString());
-                button.setStyle("-fx-background-color:rgb(55, 255, 0);");
                 button.setOnAction(e -> controller.onBidButtonClicked(e, bid));
                 controller.biddingGrid.add(button, col, row);
                 col++;
@@ -57,6 +56,7 @@ public class BiddingView extends BorderPane {
             button.setOnAction(e -> controller.onBidButtonClicked(e, bid));
             controller.biddingGrid.add(button, col++, row);
         }
+        controller.updateBiddingGridColors();
         controller.biddingGrid.setAlignment(Pos.CENTER);
         controller.table.getChildren().add(controller.biddingGrid);
 

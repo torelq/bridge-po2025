@@ -39,7 +39,7 @@ class BiddingTest {
     @Test
     void getAvailableBidsTest() {
         List<Bid> availableBids = bidding.getAvailableBids();
-        assertEquals(35, availableBids.size());
+        assertEquals(36, availableBids.size());
         assertTrue(availableBids.contains(new Bid(1, CLUBS)));
         assertTrue(availableBids.contains(new Bid(7, NO_TRUMP)));
 
@@ -281,6 +281,18 @@ class BiddingTest {
         bidding.makeBid(NORTH, PASS_BID);
         assertEquals(1, history.size());
         assertEquals(new SimpleEntry<>(NORTH, PASS_BID), history.get(0));
+    }
+
+    @Test
+    void passesWithDoubles() {
+        assertTrue(testBid(bidding, NORTH, new Bid(1, SPADES)));
+        assertTrue(testBid(bidding, EAST, PASS_BID));
+        assertTrue(testBid(bidding, SOUTH, PASS_BID));
+        assertTrue(testBid(bidding, WEST, DOUBLE_BID));
+        assertTrue(testBid(bidding, NORTH, PASS_BID));
+        assertTrue(testBid(bidding, EAST, PASS_BID));
+        assertTrue(testBid(bidding, SOUTH, PASS_BID));
+        assertTrue(bidding.decision());
     }
 
     public static void main(String[] args) {

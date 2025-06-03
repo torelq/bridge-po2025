@@ -20,6 +20,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import tcs.bridge.App;
 import static tcs.bridge.App.clientMessageStream;
 import static tcs.bridge.App.game;
 import static tcs.bridge.App.myPosition;
@@ -27,8 +28,6 @@ import static tcs.bridge.App.playerNames;
 import static tcs.bridge.App.portNumber;
 import static tcs.bridge.App.server;
 import static tcs.bridge.App.stage;
-
-import tcs.bridge.App;
 import tcs.bridge.communication.messages.JoinGameNotice;
 import tcs.bridge.communication.messages.JoinGameRequest;
 import tcs.bridge.communication.messages.MakeBidNotice;
@@ -263,12 +262,15 @@ public class Controller {
             for (int col = 0; col < suits.size(); col++) {
                 Bidding.Bid bid = new Bidding.Bid(level, suits.get(col));
                 Button button = (Button) biddingGrid.getChildren().get((level - 1) * suits.size() + col);
-                if (game.getBidding().getAvailableBids().contains(bid)) {
-                    button.setStyle("-fx-background-color:rgb(55, 255, 0);");
-                } else {
-                    button.setStyle("-fx-background-color:rgb(255, 0, 0);");
-                }
+                button.setVisible(game.getBidding().getAvailableBids().contains(bid));
             }
+        }
+        int col = 0;
+        for (Bidding.Bid.SpecialBid specialBid : Bidding.Bid.SpecialBid.values()) {
+            Bidding.Bid bid = new Bidding.Bid(0, null, specialBid);
+            Button button = (Button) biddingGrid.getChildren().get(7 * suits.size() + col);
+            button.setVisible(game.getBidding().getAvailableBids().contains(bid));
+            col++;
         }
     }
 
