@@ -21,6 +21,7 @@ public class App extends Application {
     static public Player.Position myPosition;
     static public ArrayList<String> playerNames;
     static public int portNumber;
+    static public boolean debugMode = false;
 
 
     public static void main(String[] args) {

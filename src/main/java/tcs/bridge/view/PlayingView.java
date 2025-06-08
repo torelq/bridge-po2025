@@ -1,10 +1,12 @@
 package tcs.bridge.view;
 
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import tcs.bridge.App;
@@ -14,6 +16,7 @@ import tcs.bridge.model.Hand;
 
 import java.util.List;
 import static tcs.bridge.App.game;
+import static tcs.bridge.App.debugMode;
 
 public class PlayingView extends BorderPane {
 
@@ -25,6 +28,9 @@ public class PlayingView extends BorderPane {
         List<Hand> deal = game.getDeck().deal();
         BorderPane center = new BorderPane();
         controller.table.setAlignment(Pos.CENTER);
+        Button scoreBoard = new Button("Scoreboard");
+        scoreBoard.setOnAction(controller::onClickScoreboard);
+        VBox rightvbox = new VBox(10, scoreBoard, controller.inforamtionRightLabel);
 
         /* ADDING ALL CARDS TO DECK */
         for (int i = 0; i < deal.size(); i++) {
@@ -34,7 +40,7 @@ public class PlayingView extends BorderPane {
             List<Card> cards = deal.get(i).getCards();
             for (Card card : cards) {
                 ImageView imageView;
-                if (i == App.myPosition.ordinal() || i == game.getContract().getDummy().ordinal()) {
+                if (debugMode || i == App.myPosition.ordinal() || i == game.getContract().getDummy().ordinal()) {
                     imageView = new ImageView(String.valueOf(App.class.
                             getResource("/tcs/bridge/view/cards/" +
                                     card.getSuit().getName().toLowerCase() + "_" + card.getRank().getName() + ".png")));
@@ -60,7 +66,7 @@ public class PlayingView extends BorderPane {
                     this.setTop(new HBox(20,
                             new StackPane(controller.inforamtionLeftLabel),
                             player,
-                            new StackPane(controller.inforamtionRightLabel)));
+                            rightvbox));
                     this.getTop().setStyle("-fx-alignment: center;");
                     break;
                 case 1: this.setRight(player); break;

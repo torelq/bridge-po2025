@@ -10,16 +10,14 @@ import java.util.Map;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
 import tcs.bridge.App;
 import static tcs.bridge.App.clientMessageStream;
 import static tcs.bridge.App.game;
@@ -28,6 +26,7 @@ import static tcs.bridge.App.playerNames;
 import static tcs.bridge.App.portNumber;
 import static tcs.bridge.App.server;
 import static tcs.bridge.App.stage;
+import static tcs.bridge.App.debugMode;
 import tcs.bridge.communication.messages.JoinGameNotice;
 import tcs.bridge.communication.messages.JoinGameRequest;
 import tcs.bridge.communication.messages.MakeBidNotice;
@@ -38,16 +37,12 @@ import tcs.bridge.communication.messages.ServerToClientMessage;
 import tcs.bridge.communication.messages.StateRequest;
 import tcs.bridge.communication.streams.ClientMessageStream;
 import tcs.bridge.communication.streams.TCPMessageStream;
-import tcs.bridge.model.Bidding;
-import tcs.bridge.model.Card;
-import tcs.bridge.model.Game;
-import tcs.bridge.model.Hand;
-import tcs.bridge.model.Player;
-import tcs.bridge.model.Suit;
+import tcs.bridge.model.*;
 import tcs.bridge.server.Server;
 import tcs.bridge.view.BiddingView;
 import tcs.bridge.view.FinishedView;
 import tcs.bridge.view.PlayingView;
+import tcs.bridge.view.ScoreboardView;
 
 
 public class Controller {
@@ -68,6 +63,7 @@ public class Controller {
     public Label lblHost;
     public HBox pregameBox;
     public ComboBox<Player.Position> positionComboBox;
+    public ToggleButton debugModeToggle;
 
     public Controller() {
         labels = new ArrayList<>();
@@ -128,6 +124,10 @@ public class Controller {
                         game.makeBid(bid);
                         if (!bid.isSpecial())
                             inforamtionLeftLabel.setText(bid.toString());
+                        else if (!bid.equals(Bidding.Bid.PASS_BID))
+                            // TODO: DOUBLE AND REDOUBLE
+                            inforamtionLeftLabel.setText(inforamtionLeftLabel.getText());
+
                         makeTurn(game.getCurrentTurn());
                         updateBiddingGridColors();
                         if (game.getState() == Game.State.PLAYING){
@@ -223,6 +223,7 @@ public class Controller {
     }
     /* JOIN GAME */
     private void joinGame(){
+        debugMode = debugModeToggle.isSelected();
         String name = playerNameField.getText();
         Player.Position position = positionComboBox.getValue();
         try {
@@ -321,6 +322,17 @@ public class Controller {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    /* SCOREBOARD */
+    public void onClickScoreboard(ActionEvent event) {
+        // TODO: scoreboard
+        ScoreboardView view = new ScoreboardView();
+
+        Stage scoreboardStage = new Stage();
+        scoreboardStage.setTitle("Scoreboard");
+        scoreboardStage.setScene(new Scene(view));
+        scoreboardStage.show();
     }
 
     /* CHANGE STATE OF GAME */
