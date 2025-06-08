@@ -7,6 +7,7 @@ import tcs.bridge.communication.streams.ServerMessageStream;
 import tcs.bridge.communication.streams.TCPMessageStream;
 import tcs.bridge.model.Game;
 import tcs.bridge.model.Player;
+import tcs.bridge.model.Scoring;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -49,6 +50,7 @@ public class Server {
 
     class GameWrapper {
         private Game game;
+        private final Scoring scoring = new Scoring();
         private final Map<Player.Position, PlayerRecord> playerMap = new HashMap<>();
 
         static class PlayerRecord {
@@ -77,6 +79,12 @@ public class Server {
                     playerMap.get(position).player = player;
                 }
             }
+        }
+
+        private void gameFinished() {
+            Scoring.ScoringEntry scoringEntry = game.getScoringEntry();
+            scoring.addEntry(scoringEntry);
+            sendAll(new GameFinishedNotice(scoringEntry));
         }
 
         Player.Position register(Client client, Player.Position position) {
@@ -158,6 +166,8 @@ public class Server {
                 if (game.playCard(playCardRequest.card())) {
                     client.clientHandler.writeMessage(new PlayCardRequest.AcceptResponse());
                     sendAll(new PlayCardNotice(playCardRequest.position(), playCardRequest.card()));
+
+                    if (game.getState()== Game.State.FINISHED) gameFinished();
                     return;
                 }
             }
@@ -179,6 +189,10 @@ public class Server {
                 }
             }
             client.clientHandler.writeMessage(new NicksRequest.NicksResponse(nicks));
+        }
+
+        void handleScoringRequest(Client client, ScoringRequest scoringRequest) {
+            client.clientHandler.writeMessage(new ScoringRequest.ScoringResponse(scoring));
         }
     }
 
