@@ -1,9 +1,10 @@
 package tcs.bridge.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Hand {
+public class Hand implements Serializable {
     private final List<Card> cards;
 
     public Hand() {

@@ -58,6 +58,9 @@ public class DeepCopyDebugging {
 
             Game game2 = copyGame(game);
 
+            System.out.println("game:\n"+game+"\n\n");
+            System.out.println("game2:\n"+game2+"\n\n");
+
             Card card = game.getPlayers().get(Player.Position.EAST).getCards().get(0);
             System.out.println("card: "+card);
             if (rev) assertTrue(game2.playCard(card));

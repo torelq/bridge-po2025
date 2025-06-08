@@ -89,9 +89,7 @@ public class Controller {
                                 + "\n" + playerNames.get(myPosition.ordinal())
                                 + " (me)");
                     if (game == null){
-                        // TODO: gleboka kopia?
-                        Game serverGame = stateResponse.game();
-                        game = serverGame; // shallow copy
+                        game = stateResponse.game(); // shallow copy
                         /*List<Hand> hands = serverGame.getDeck().deal();
                         game = new Game();
                         game.joinGame(serverGame.getPlayers().get(Player.Position.NORTH));
