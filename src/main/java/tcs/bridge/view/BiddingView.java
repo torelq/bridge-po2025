@@ -24,6 +24,7 @@ public class BiddingView extends BorderPane {
         this.setStyle("-fx-background-color: #32442d;");
 
         /* SETTING A SCENE FOR A BIDDING */
+        controller.table.getChildren().clear();
         BorderPane center = new BorderPane();
         controller.table.setAlignment(Pos.CENTER);
 
@@ -84,7 +85,7 @@ public class BiddingView extends BorderPane {
         /* ADDING ALL CARDS TO DECK */
         List<Hand> deal = game.getDeck().deal();
         for (int i = 0; i < deal.size(); i++) {
-            StackPane player = new StackPane(); // TODO: nie tak
+            StackPane player = new StackPane();
             player.setAlignment(Pos.CENTER);
             int translate = -283;
             List<Card> cards = deal.get(i).getCards();

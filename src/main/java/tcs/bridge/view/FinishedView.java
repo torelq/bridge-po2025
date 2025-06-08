@@ -17,7 +17,7 @@ import static tcs.bridge.App.game;
 import static tcs.bridge.App.scoringEntryList;
 
 public class FinishedView extends BorderPane {
-    public FinishedView(Controller controller) {
+    public FinishedView(Controller controller, ScoreboardView scoreboardView) {
         this.setStyle("-fx-background-color: #32442d;");
 
         Button playNextRoundButton = new Button("Play Next Round");
@@ -26,8 +26,6 @@ public class FinishedView extends BorderPane {
         stackPane.setMinSize(150, 150);
         this.setTop(stackPane);
 
-
-        ScoreboardView scoreboardView = new ScoreboardView(scoringEntryList);
         scoreboardView.setMaxSize(400, 400);
         this.setCenter(scoreboardView);
     }
