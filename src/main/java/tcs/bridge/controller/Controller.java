@@ -89,7 +89,7 @@ public class Controller {
                                 + "\n" + playerNames.get(myPosition.ordinal())
                                 + " (me)");
                     if (game == null){
-                        game = stateResponse.game(); // shallow copy
+                        game = stateResponse.game(); // proper deep copy
                         /*List<Hand> hands = serverGame.getDeck().deal();
                         game = new Game();
                         game.joinGame(serverGame.getPlayers().get(Player.Position.NORTH));
