@@ -162,7 +162,6 @@ public class Server {
 
         void handlePlayCardRequest(Client client, PlayCardRequest playCardRequest) {
             if (game.getState()==Game.State.PLAYING) {
-                // TODO: make sure players cannot play other's cards.
                 if (game.playCard(playCardRequest.card())) {
                     client.clientHandler.writeMessage(new PlayCardRequest.AcceptResponse());
                     sendAll(new PlayCardNotice(playCardRequest.position(), playCardRequest.card()));
