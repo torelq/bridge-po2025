@@ -105,7 +105,8 @@ public class Controller {
                         game.getPlayers().get(Player.Position.EAST).setHand(hands.get(1));
                         game.getPlayers().get(Player.Position.SOUTH).setHand(hands.get(2));
                         game.getPlayers().get(Player.Position.WEST).setHand(hands.get(3));
-                        Platform.runLater(this::startBidding);
+                        Platform.runLater(this::startBidding); // or not bidding
+                        // TODO: ponowne dolaczanie
                     }
                 }
                 /* JOIN GAME AND SETTING MY NAME AND POSITION */
@@ -122,11 +123,7 @@ public class Controller {
                     Platform.runLater(()->{
                         Bidding.Bid bid = makeBidNotice.bid();
                         game.makeBid(bid);
-                        if (!bid.isSpecial())
-                            inforamtionLeftLabel.setText(bid.toString());
-                        else if (!bid.equals(Bidding.Bid.PASS_BID))
-                            // TODO: DOUBLE AND REDOUBLE
-                            inforamtionLeftLabel.setText(inforamtionLeftLabel.getText());
+                        inforamtionLeftLabel.setText(game.getBidding().lastBidToString());
 
                         makeTurn(game.getCurrentTurn());
                         updateBiddingGridColors();

@@ -31,6 +31,7 @@ public class PlayingView extends BorderPane {
         Button scoreBoard = new Button("Scoreboard");
         scoreBoard.setOnAction(controller::onClickScoreboard);
         VBox rightvbox = new VBox(10, scoreBoard, controller.inforamtionRightLabel);
+        rightvbox.setAlignment(Pos.CENTER);
 
         /* ADDING ALL CARDS TO DECK */
         for (int i = 0; i < deal.size(); i++) {

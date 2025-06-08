@@ -259,5 +259,9 @@ public class Bidding implements Serializable {
         sb.append("}");
         return sb.toString();
     }
-
+    public String lastBidToString(){
+        return lastNumericalBid.toString() +
+                (lastNumericalBidDoubled ? " X" : "") +
+                (lastNumericalBidRedoubled ? "X" : "");
+    }
 }
