@@ -73,28 +73,16 @@ public class Controller {
                 if (message instanceof StateRequest.StateResponse stateResponse) {
                     myPosition = stateResponse.myPosition();
                     if (myPosition != null)
-                        labels.get(myPosition.ordinal()).setText(myPosition.name()
-                                + "\n" + playerNames.get(myPosition.ordinal())
-                                + " (me)");
-                    if (game == null){
-//                        game = stateResponse.game(); // proper deep copy
-                        Game serverGame = stateResponse.game();
-                        List<Hand> hands = serverGame.getDeck().deal();
-                        game = new Game();
-                        game.joinGame(serverGame.getPlayers().get(Player.Position.NORTH));
-                        game.joinGame(serverGame.getPlayers().get(Player.Position.EAST));
-                        game.joinGame(serverGame.getPlayers().get(Player.Position.SOUTH));
-                        game.joinGame(serverGame.getPlayers().get(Player.Position.WEST));
-                        game.setDeck(serverGame.getDeck());
-                        game.getPlayers().get(Player.Position.NORTH).setHand(hands.get(0));
-                        game.getPlayers().get(Player.Position.EAST).setHand(hands.get(1));
-                        game.getPlayers().get(Player.Position.SOUTH).setHand(hands.get(2));
-                        game.getPlayers().get(Player.Position.WEST).setHand(hands.get(3));
-                        switch (game.getState()){
-                            case BIDDING -> Platform.runLater(this::startBidding);
-                            case PLAYING -> Platform.runLater(this::startPlaying);
-                            case FINISHED -> Platform.runLater(this::startFinished);
-                        }
+                        Platform.runLater(() -> {
+                            labels.get(myPosition.ordinal()).setText(myPosition.name()
+                                    + "\n" + playerNames.get(myPosition.ordinal())
+                                    + " (me)");
+                        });
+                    game = stateResponse.game(); // proper deep copy
+                    switch (game.getState()){
+                        case BIDDING -> Platform.runLater(this::startBidding);
+                        case PLAYING -> Platform.runLater(this::startPlaying);
+                        case FINISHED -> Platform.runLater(this::startFinished);
                     }
                 }
                 /* JOIN GAME AND SETTING MY NAME AND POSITION */
@@ -161,19 +149,11 @@ public class Controller {
                             throw new RuntimeException(e);
                         }
                     });
-                    Platform.runLater(()->{
-                        try {
-                            clientMessageStream.writeMessage(new StateRequest());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-
-
                 }
 
                 if (message instanceof ScoringRequest.ScoringResponse scoringResponse) {
                     scoringEntryList = scoringResponse.scoring().getScoring();
+                    Platform.runLater(this::startFinished);
                 }
 
                 /* PLAY AGAIN */
@@ -435,16 +415,15 @@ public class Controller {
         stage.show();
         table.getChildren().clear();
         inforamtionLeftLabel.setText(inforamtionLeftLabel.getText() + "\n" + game.getContract().getDeclarer().name());
-        try {
-            clientMessageStream.writeMessage(new StateRequest());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            clientMessageStream.writeMessage(new StateRequest());
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     public void startFinished(){
-//        scoringEntryList.add(game.getScoringEntry());
-        FinishedView view = new FinishedView(this);
+        FinishedView view = new FinishedView(this, new ScoreboardView(scoringEntryList));
 
         stage.setTitle("TCS Bridge - FINISHED");
         stage.setScene(new Scene(view, 900, 900));
