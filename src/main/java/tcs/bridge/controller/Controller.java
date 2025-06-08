@@ -2,10 +2,7 @@ package tcs.bridge.controller;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -289,7 +286,8 @@ public class Controller {
      *
      * */
 
-    /* MAKING BIGGER LABEL FOR ACTUAL PLAYING PLAYER AND COUNTING GAINED TRICKS */
+    /* MAKING BIGGER LABEL FOR ACTUAL PLAYING PLAYER,
+    SHOWING AVAILABLE CARDS AND COUNTING GAINED TRICKS */
     public void makeTurnPlaying(Player.Position position) {
         for (int i = 0; i < labels.size(); i++) {
             Player.Position pos = Player.Position.values()[i];
@@ -302,8 +300,36 @@ public class Controller {
             labels.get(i).setText(pos.toString() + " " + gainedTricks + "\n" +
                     playerNames.get(i) + (pos == myPosition ? " (me)" : "")
             );
-            makeTurn(position);
         }
+        for (int i = 0; i < 4; i++) {
+            for (Card card : game.getDeck().deal().get(i).getCards()){
+                if ((myPosition.ordinal() == i || game.getContract().getDeclarer() == myPosition && game.getContract().getDummy().ordinal() == i)
+                        && game.canPlayCard(card)
+                        /*&& game.getNumberOfPlayedCards() % 4 != 0*/) {
+                    switch (game.getCurrentTurn().ordinal()){
+                        case 0:
+                            cardImages.get(card).setTranslateY(20);
+                            break;
+                        case 1:
+                            cardImages.get(card).setTranslateX(-20);
+                            break;
+                        case 2:
+                            cardImages.get(card).setTranslateY(-20);
+                            break;
+                        case 3:
+                            cardImages.get(card).setTranslateX(20);
+                            break;
+                    }
+                }
+                else if (cardImages.get(card).getParent() != null && !cardImages.get(card).getParent().equals(table)){
+                    if (i % 2 == 0)
+                        cardImages.get(card).setTranslateY(0);
+                    else
+                        cardImages.get(card).setTranslateX(0);
+                }
+            }
+        }
+        makeTurn(position);
     }
 
     /* PLYING CARDS AND CHECKING IF FINISHED */
