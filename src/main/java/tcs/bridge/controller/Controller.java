@@ -89,9 +89,8 @@ public class Controller {
                                 + "\n" + playerNames.get(myPosition.ordinal())
                                 + " (me)");
                     if (game == null){
-                        // TODO: gleboka kopia?
-                        Game serverGame = stateResponse.game();
-                        List<Hand> hands = serverGame.getDeck().deal();
+                        game = stateResponse.game(); // shallow copy
+                        /*List<Hand> hands = serverGame.getDeck().deal();
                         game = new Game();
                         game.joinGame(serverGame.getPlayers().get(Player.Position.NORTH));
                         game.joinGame(serverGame.getPlayers().get(Player.Position.EAST));
@@ -101,7 +100,7 @@ public class Controller {
                         game.getPlayers().get(Player.Position.NORTH).setHand(hands.get(0));
                         game.getPlayers().get(Player.Position.EAST).setHand(hands.get(1));
                         game.getPlayers().get(Player.Position.SOUTH).setHand(hands.get(2));
-                        game.getPlayers().get(Player.Position.WEST).setHand(hands.get(3));
+                        game.getPlayers().get(Player.Position.WEST).setHand(hands.get(3));*/
                         Platform.runLater(this::startBidding); // or not bidding
                         // TODO: ponowne dolaczanie
                     }
