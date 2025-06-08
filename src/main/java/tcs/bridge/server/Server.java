@@ -169,6 +169,17 @@ public class Server {
             client.clientHandler.writeMessage(new NewGameRequest.AcceptResponse());
             sendAll(new NewGameNotice());
         }
+
+        void handleNicksRequest(Client client, NicksRequest nicksRequest) {
+            Map<Player.Position, String> nicks = new HashMap<>();
+            synchronized (playerMap) {
+                for (Player.Position position : Player.Position.values()) {
+                    if (playerMap.get(position).client==null) nicks.put(position, null);
+                    else nicks.put(position, playerMap.get(position).name);
+                }
+            }
+            client.clientHandler.writeMessage(new NicksRequest.NicksResponse(nicks));
+        }
     }
 
     private class MainLoop {
@@ -241,6 +252,8 @@ public class Server {
                 gameWrapper.handlePlayCardRequest(client, playCardRequest);
             } else if (message instanceof NewGameRequest newGameRequest) {
                 gameWrapper.handleNewGameRequest(client, newGameRequest);
+            } else if (message instanceof NicksRequest nicksRequest) {
+                gameWrapper.handleNicksRequest(client, nicksRequest);
             } else {
                 throw new RuntimeException();
             }
