@@ -10,6 +10,7 @@ import tcs.bridge.communication.streams.ClientMessageStream;
 import tcs.bridge.controller.Controller;
 import tcs.bridge.model.Game;
 import tcs.bridge.model.Player;
+import tcs.bridge.model.Scoring;
 import tcs.bridge.server.Server;
 import tcs.bridge.view.PregameView;
 
@@ -22,6 +23,7 @@ public class App extends Application {
     static public ArrayList<String> playerNames;
     static public int portNumber;
     static public boolean debugMode = false;
+    static public List<Scoring.ScoringEntry> scoringEntryList;
 
 
     public static void main(String[] args) {

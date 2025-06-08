@@ -98,7 +98,7 @@ public class BiddingView extends BorderPane {
                     imageView = new ImageView(String.valueOf(App.class.
                             getResource("/tcs/bridge/view/cards/back_bic.png")));
                 }
-                imageView.setFitWidth(96.8);
+                imageView.setPreserveRatio(true);
                 imageView.setFitHeight(136);
                 if (i == 0 || i == 2)
                     imageView.setTranslateX(translate += 40);
