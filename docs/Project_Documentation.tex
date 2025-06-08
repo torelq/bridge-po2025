@@ -1,0 +1,101 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+% \usepackage{amssymb, amsmath, amsthm}
+\usepackage{csquotes}
+\usepackage{graphicx}
+
+\setlength{\parindent}{0pt}
+% \newcommand{\hi}[1]{\textit{#1}}
+% \newcommand{\imp}{\Rightarrow}
+% \newcommand{\limp}{\Leftarrow}
+% \newcommand{\mbb}[1]{\mathbb{#1}}
+\newcommand{\ch}[1]{\texttt{#1}}
+
+\title{Dokumentacja Projektu \enquote{Brydż}}
+\author{Hubert Krata}
+\date{PO 2025}
+
+\begin{document}
+\maketitle
+
+\section{Ogólna architektura}
+
+Projekt zrealizowaliśmy w architekturze MVC.\\
+
+Opis komponentów, którym odpowiadają pakiety:
+\begin{itemize}
+	\item \ch{model} --- zawiera klasy modelujące logikę gry (w szczególności \ch{Game}, \ch{Bidding} i \ch{Scoring})
+	\item \ch{controller} --- zawiera logikę działania klienta (event handlery GUI, odbieranie wiadomości, itp). Jeśli klient hostuje serwer, trzyma referencję do obiektu \ch{Server}, ale nic z nią nie robi.
+	\item \ch{view} --- zawiera klasy odpowiadające za wygląd GUI. Zastosowaliśmy framework JavaFX.
+	\item \ch{server} --- jedyną publiczną klasą jest \ch{Server}, odpowiadająca za\ldots serwer.
+	\item \ch{communication} --- klasy ułatwiające komunikację klient-serwer.
+\end{itemize}
+
+\section{Nieco bardziej szczegółowe opisy niektórych komponentów}
+
+\subsection{\ch{Model}}
+
+Podstawowe klasy modelu:
+\begin{itemize}
+	\item \ch{Bidding} --- odpowiada za licytację.
+	\item \ch{Game} --- odpowiada za przebieg rozdania (w szczególności, zrzucanie kolejnych lew). Zawiera referencję do \ch{Bidding}.
+	\item \ch{Scoring} --- odpowiada za liczenie wyniku z wielu gier.
+\end{itemize}
+
+Istnieją testy jednostkowe do modelu.
+
+\subsection{\ch{Communication}}
+
+Dzięki pakietowi \ch{communication}, klient (\ch{Controller}) i serwer (\ch{Server}) nie komunikują się za pomocą \enquote{gołych} socketów i bajtów. Zawiera dwa podpakiety: \ch{messages} i \ch{streams}.
+
+\subsubsection{\ch{Messages}}
+
+Podstawą komunikacji są wiadomości. Komunikacja odbywa się jednocześnie na dwa sposoby: request-response (\ch{xxRequest}-\ch{xxResponse}), gdzie klient pyta o coś serwer, a serwer odpowiada, oraz poprzez wiadomości \ch{xxNotice}, które wysyła serwer do klientów, informując ich o jakiejś zmianie.\\
+Całość stanu gry jest jawna dla każdego klienta. Przesyłane są zmiany stanu, chociaż jest możliwość poproszenia o cały stan.\\
+
+Wiadomości są silnie otypowane jako \ch{ClientToServerMessage} lub \ch{ServerToClientMessage}.
+
+\subsubsection{\ch{Streams}}
+
+Streamy obudowują komunikację, tak aby można było przesyłać wyłącznie wiadomości z kontrolą typów oraz umożliwiając abstrakcję na komunikację przez socket albo lokalnie.\\
+
+Inne pakiety powinny korzystać \textit{wyłącznie} z odpowiednio \ch{ClientMessageStream} lub \ch{ServerMessageStream} opakowujących inne rzeczy, np.:\\
+\ch{new ClientMessageStream(new TCPMessageStream(new Socket(...)))}\\
+
+\ch{\{Client, Server\}MessageStream} może opakowywać \ch{TCPMessageStream} opakowujący \ch{Socket} albo \ch{PipedMessageStream} opakowujący lokalny pipe. Chociaż ostatecznie \ch{PipedMessageStream} nie jest używany, był przydatny do testów.\\
+
+Dziwna nieco architektura jest konsekwencją chęci zachowania kontroli typów wiadomości.
+
+\subsection{\ch{Server}}
+
+Serwer jest zbudowany jako samowystarczalny. \ch{Controller} musi zrobić:\\
+\ch{Server server = new Server();\\
+Thread serverThread = server.runInNewThread();\\
+// ...\\
+serverThread.join();}\\
+I nie musi się serwerem więcej przejmować.\\
+
+Serwer ma trzy główne części:
+\begin{itemize}
+	\item \ch{acceptorTh} --- wątek nasłuchujący na \ch{ServerSocket}, akceptujący każdego klienta i dodającego go do listy klientów z utworzeniem właściwych mu wątków/struktur danych.
+	\item klienci --- każdy klient ma dwa wątki: jeden pisze na \ch{ServerMessageStream}, drugi zeń czyta i wrzuca wiadomości na kolejkę wydarzeń. W razie przepełnienia buforów, klient jest odłączany.
+	\item \ch{mainLoopTh} --- sekwencyjnie przetwarza kolejne rządania/wydarzenia z kolejki i wrzuca odpowiedzi na bufory klientów. Przechowuje stan gry.
+\end{itemize}
+
+Testy serwera to nie testy jednostkowe, a małe programy, które pomogły przy debugowaniu.
+
+\section{Napotkane trudności i uwagi do architektury}
+
+\subsection{Napotkane trudności}
+
+Jedynym naprawdę trudnym bugiem był problem z serializacją obietu \ch{Game}. Obiekt \ch{Player} rozszerzał \ch{Hand} i implementował \ch{Serializable}, ale \ch{Hand} nie implementowało \ch{Serializable}, przez co nie przesyłał się stan ręki.
+
+\subsection{Przemyślenia dot. architektury}
+
+Architektura z pewnością nie jest doskonała. Część decyzji była albo być może błędna, lub na pewno błędna. Niemniej, równie ważne co polepszanie architektury, jest to, aby wiedzieć, kiedy przestać. Obecny kod opiera się na poprzednich decyzjach, a refactoring kosztuje.\\
+
+Dobrym przykładem jest metoda \ch{Game.joinGame(Player)}. Nie modeluje ona faktycznego dołączania/rozłączania się graczy, lecz jest po prostu częścią inicjalizacji gry (\ch{Game} bez tego nie może się zacząć) i musi być wywołana po konstruktorze \ch{Game}. Mogłaby być częścią tego konstruktora.
+
+\end{document}
