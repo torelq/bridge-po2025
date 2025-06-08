@@ -30,7 +30,10 @@ public class PlayingView extends BorderPane {
         controller.table.setAlignment(Pos.CENTER);
         Button scoreBoard = new Button("Scoreboard");
         scoreBoard.setOnAction(controller::onClickScoreboard);
-        VBox rightvbox = new VBox(10, scoreBoard, controller.inforamtionRightLabel);
+
+        Button debugButton = new Button("MAGIC");
+        debugButton.setOnAction(controller::onDebugButtonClicked);
+        VBox rightvbox = new VBox(10, scoreBoard, debugButton, controller.inforamtionRightLabel);
         rightvbox.setAlignment(Pos.CENTER);
 
         /* ADDING ALL CARDS TO DECK */
@@ -49,7 +52,7 @@ public class PlayingView extends BorderPane {
                     imageView = new ImageView(String.valueOf(App.class.
                             getResource("/tcs/bridge/view/cards/back_bic.png")));
                 }
-                imageView.setFitWidth(96.8);
+                imageView.setPreserveRatio(true);
                 imageView.setFitHeight(136);
                 if (i == 0 || i == 2)
                     imageView.setTranslateX(translate += 40);

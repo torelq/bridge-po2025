@@ -16,22 +16,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import tcs.bridge.App;
-import static tcs.bridge.App.clientMessageStream;
-import static tcs.bridge.App.game;
-import static tcs.bridge.App.myPosition;
-import static tcs.bridge.App.playerNames;
-import static tcs.bridge.App.portNumber;
-import static tcs.bridge.App.server;
-import static tcs.bridge.App.stage;
-import static tcs.bridge.App.debugMode;
-import tcs.bridge.communication.messages.JoinGameNotice;
-import tcs.bridge.communication.messages.JoinGameRequest;
-import tcs.bridge.communication.messages.MakeBidNotice;
-import tcs.bridge.communication.messages.MakeBidRequest;
-import tcs.bridge.communication.messages.PlayCardNotice;
-import tcs.bridge.communication.messages.PlayCardRequest;
-import tcs.bridge.communication.messages.ServerToClientMessage;
-import tcs.bridge.communication.messages.StateRequest;
+import tcs.bridge.communication.messages.*;
 import tcs.bridge.communication.streams.ClientMessageStream;
 import tcs.bridge.communication.streams.TCPMessageStream;
 import tcs.bridge.model.*;
@@ -40,6 +25,8 @@ import tcs.bridge.view.BiddingView;
 import tcs.bridge.view.FinishedView;
 import tcs.bridge.view.PlayingView;
 import tcs.bridge.view.ScoreboardView;
+
+import static tcs.bridge.App.*;
 
 
 public class Controller {
@@ -62,6 +49,7 @@ public class Controller {
     public ComboBox<Player.Position> positionComboBox;
     public ToggleButton debugModeToggle;
 
+    /* INIT CONTROLLER */
     public Controller() {
         labels = new ArrayList<>();
         for (Player.Position pos : Player.Position.values()) {
@@ -81,7 +69,7 @@ public class Controller {
                 ServerToClientMessage message = clientMessageStream.readMessage();
                 System.out.println(message);
 
-                /* GETTING GAME FROM SERVER BEFORE BIDDING */
+                /* GETTING GAME STATE FROM SERVER */
                 if (message instanceof StateRequest.StateResponse stateResponse) {
                     myPosition = stateResponse.myPosition();
                     if (myPosition != null)
@@ -89,8 +77,9 @@ public class Controller {
                                 + "\n" + playerNames.get(myPosition.ordinal())
                                 + " (me)");
                     if (game == null){
-                        game = stateResponse.game(); // proper deep copy
-                        /*List<Hand> hands = serverGame.getDeck().deal();
+//                        game = stateResponse.game(); // proper deep copy
+                        Game serverGame = stateResponse.game();
+                        List<Hand> hands = serverGame.getDeck().deal();
                         game = new Game();
                         game.joinGame(serverGame.getPlayers().get(Player.Position.NORTH));
                         game.joinGame(serverGame.getPlayers().get(Player.Position.EAST));
@@ -100,9 +89,12 @@ public class Controller {
                         game.getPlayers().get(Player.Position.NORTH).setHand(hands.get(0));
                         game.getPlayers().get(Player.Position.EAST).setHand(hands.get(1));
                         game.getPlayers().get(Player.Position.SOUTH).setHand(hands.get(2));
-                        game.getPlayers().get(Player.Position.WEST).setHand(hands.get(3));*/
-                        Platform.runLater(this::startBidding); // or not bidding
-                        // TODO: ponowne dolaczanie
+                        game.getPlayers().get(Player.Position.WEST).setHand(hands.get(3));
+                        switch (game.getState()){
+                            case BIDDING -> Platform.runLater(this::startBidding);
+                            case PLAYING -> Platform.runLater(this::startPlaying);
+                            case FINISHED -> Platform.runLater(this::startFinished);
+                        }
                     }
                 }
                 /* JOIN GAME AND SETTING MY NAME AND POSITION */
@@ -150,13 +142,47 @@ public class Controller {
                                 case 3: imageView.setTranslateX(-50); break;
                             }
                             table.getChildren().add(imageView);
-                            if (game.getState() == Game.State.FINISHED){
-                                startFinished();
-                            }
-                            makeTurnPlaying(game.getCurrentTurn());
+                            if (game.getState() == Game.State.PLAYING)
+                                makeTurnPlaying(game.getCurrentTurn());
                         }
                         else {
                             System.out.println("Playing card FAILED.");
+                        }
+                        if (debugMode && game.getState() == Game.State.PLAYING) onDebugButtonClicked(null);
+                    });
+                }
+
+                /* FINISH THIS */
+                if (message instanceof GameFinishedNotice){
+                    Platform.runLater(()->{
+                        try {
+                            clientMessageStream.writeMessage(new ScoringRequest());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                    Platform.runLater(()->{
+                        try {
+                            clientMessageStream.writeMessage(new StateRequest());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+
+
+                }
+
+                if (message instanceof ScoringRequest.ScoringResponse scoringResponse) {
+                    scoringEntryList = scoringResponse.scoring().getScoring();
+                }
+
+                /* PLAY AGAIN */
+                if (message instanceof NewGameNotice) {
+                    Platform.runLater(()->{
+                        try {
+                            clientMessageStream.writeMessage(new StateRequest());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
                     });
                 }
@@ -272,10 +298,10 @@ public class Controller {
     public void makeTurn(Player.Position position) {
         for (int i = 0; i < labels.size(); i++) {
             if (Player.Position.values()[i].toString().equals(position.toString())) {
-                labels.get(i).setStyle("-fx-font-size: 20; -fx-font-weight: bold");
+                labels.get(i).setStyle("-fx-font-size: 16; -fx-font-weight: bold");
             }
             else
-                labels.get(i).setStyle("-fx-font-weight: normal; -fx-font-size: 15");
+                labels.get(i).setStyle("-fx-font-weight: normal; -fx-font-size: 12");
         }
     }
 
@@ -304,7 +330,7 @@ public class Controller {
             for (Card card : game.getDeck().deal().get(i).getCards()){
                 if ((myPosition.ordinal() == i || game.getContract().getDeclarer() == myPosition && game.getContract().getDummy().ordinal() == i)
                         && game.canPlayCard(card)
-                        /*&& game.getNumberOfPlayedCards() % 4 != 0*/) {
+                        && game.getNumberOfPlayedCards() % 4 != 0) {
                     switch (game.getCurrentTurn().ordinal()){
                         case 0:
                             cardImages.get(card).setTranslateY(20);
@@ -346,16 +372,51 @@ public class Controller {
         }
     }
 
+    /* PLAY RANDOM CARDS TO DEBUG */
+    public void onDebugButtonClicked(ActionEvent event) {
+        try {
+            Thread.sleep(700);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            Player.Position pos = game.getCurrentTurn();
+            for (Card card : game.getDeck().deal().get(pos.ordinal()).getCards()) {
+                if (game.canPlayCard(card)) {
+                    clientMessageStream.writeMessage(new PlayCardRequest(pos, card));
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /* SCOREBOARD */
     public void onClickScoreboard(ActionEvent event) {
-        // TODO: scoreboard
-        ScoreboardView view = new ScoreboardView();
+        ScoreboardView view = new ScoreboardView(scoringEntryList);
 
         Stage scoreboardStage = new Stage();
         scoreboardStage.setTitle("Scoreboard");
         scoreboardStage.setScene(new Scene(view));
         scoreboardStage.show();
     }
+
+
+    /*
+     *
+     *  FINISHED
+     *
+     * */
+
+    public void onPlayNextRound(ActionEvent event) {
+        try {
+            clientMessageStream.writeMessage(new NewGameRequest());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     /* CHANGE STATE OF GAME */
     private void startBidding() {
@@ -382,6 +443,7 @@ public class Controller {
     }
 
     public void startFinished(){
+//        scoringEntryList.add(game.getScoringEntry());
         FinishedView view = new FinishedView(this);
 
         stage.setTitle("TCS Bridge - FINISHED");
