@@ -268,6 +268,8 @@ public class Server {
                 gameWrapper.handleNewGameRequest(client, newGameRequest);
             } else if (message instanceof NicksRequest nicksRequest) {
                 gameWrapper.handleNicksRequest(client, nicksRequest);
+            } else if (message instanceof ScoringRequest scoringRequest) {
+                gameWrapper.handleScoringRequest(client, scoringRequest);
             } else {
                 throw new RuntimeException();
             }
