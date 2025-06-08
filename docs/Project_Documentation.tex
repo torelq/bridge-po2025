@@ -94,8 +94,6 @@ Jedynym naprawdę trudnym bugiem był problem z serializacją obietu \ch{Game}. 
 
 \subsection{Przemyślenia dot. architektury}
 
-Architektura z pewnością nie jest doskonała. Część decyzji była albo być może błędna, lub na pewno błędna. Niemniej, równie ważne co polepszanie architektury, jest to, aby wiedzieć, kiedy przestać. Obecny kod opiera się na poprzednich decyzjach, a refactoring kosztuje.\\
-
-Dobrym przykładem jest metoda \ch{Game.joinGame(Player)}. Nie modeluje ona faktycznego dołączania/rozłączania się graczy, lecz jest po prostu częścią inicjalizacji gry (\ch{Game} bez tego nie może się zacząć) i musi być wywołana po konstruktorze \ch{Game}. Mogłaby być częścią tego konstruktora.
+Architektura z pewnością nie jest doskonała. Część decyzji była pewnie błędna, albo przynajmniej nieoptymalna. Niemniej, równie ważne co polepszanie architektury, jest to, aby wiedzieć, kiedy przestać. Obecny kod spełnia założenia projektu i opiera się na poprzednich decyzjach, a refactoring kosztuje.
 
 \end{document}
