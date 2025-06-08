@@ -167,7 +167,7 @@ public class Server {
                     client.clientHandler.writeMessage(new PlayCardRequest.AcceptResponse());
                     sendAll(new PlayCardNotice(playCardRequest.position(), playCardRequest.card()));
 
-                    if (game.getState()== Game.State.FINISHED) gameFinished();
+                    if (game.getState() == Game.State.FINISHED) gameFinished();
                     return;
                 }
             }
