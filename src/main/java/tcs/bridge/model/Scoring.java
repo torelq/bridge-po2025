@@ -1,10 +1,11 @@
 package tcs.bridge.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Scoring {
-    public static class ScoringEntry {
+public class Scoring implements Serializable {
+    public static class ScoringEntry implements Serializable {
         private final Contract contract;
         private final int wonTricks;
         private final int nsScore; // won points for ns
@@ -96,7 +97,7 @@ public class Scoring {
     }
     private final List<ScoringEntry> scoring = new ArrayList<>();
 
-    void addEntry(ScoringEntry entry) {
+    public void addEntry(ScoringEntry entry) {
         scoring.add(entry);
     }
     ScoringEntry getEntry(int index) {

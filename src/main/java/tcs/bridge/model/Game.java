@@ -177,6 +177,13 @@ public class Game implements Serializable {
         }
     }
 
+    public Scoring.ScoringEntry getScoringEntry() {
+        if (state != State.FINISHED) {
+            throw new IllegalStateException("Game is not finished");
+        }
+        return new Scoring.ScoringEntry(contract, getGainedTricks());
+    }
+
     public State getState() {
         return state;
     }
