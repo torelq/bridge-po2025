@@ -11,7 +11,6 @@ import tcs.bridge.model.Player;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.concurrent.*;
@@ -49,7 +48,7 @@ public class Server {
     }
 
     class GameWrapper {
-        private Game game = new Game();
+        private Game game;
         private final Map<Player.Position, PlayerRecord> playerMap = new HashMap<>();
 
         static class PlayerRecord {
@@ -64,9 +63,19 @@ public class Server {
 
         GameWrapper() {
             for (Player.Position position : Player.Position.values()) {
-                Player player = new Player(position);
-                game.joinGame(player);
-                playerMap.put(position, new PlayerRecord(player));
+                playerMap.put(position, new PlayerRecord(null));
+            }
+            initNewGame();
+        }
+
+        private void initNewGame() {
+            synchronized (playerMap) {
+                game = new Game();
+                for (Player.Position position : Player.Position.values()) {
+                    Player player = new Player(position);
+                    game.joinGame(player);
+                    playerMap.get(position).player = player;
+                }
             }
         }
 
@@ -154,6 +163,12 @@ public class Server {
             }
             client.clientHandler.writeMessage(new RejectResponse());
         }
+
+        void handleNewGameRequest(Client client, NewGameRequest newGameRequest) {
+            initNewGame();
+            client.clientHandler.writeMessage(new NewGameRequest.AcceptResponse());
+            sendAll(new NewGameNotice());
+        }
     }
 
     private class MainLoop {
@@ -224,6 +239,8 @@ public class Server {
                 gameWrapper.handleMakeBidRequest(client, makeBidRequest);
             } else if (message instanceof PlayCardRequest playCardRequest) {
                 gameWrapper.handlePlayCardRequest(client, playCardRequest);
+            } else if (message instanceof NewGameRequest newGameRequest) {
+                gameWrapper.handleNewGameRequest(client, newGameRequest);
             } else {
                 throw new RuntimeException();
             }
