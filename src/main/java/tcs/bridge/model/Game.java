@@ -233,6 +233,7 @@ public class Game implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Game {\n")
+          .append("  Current Turn: ").append(turn == null ? "null" : turn).append(",\n")
           .append("  State: ").append(state == null ? "null" : state).append(",\n")
           .append("  Dealer: ").append(dealer == null ? "null" : dealer).append(",\n")
           .append("  Players:\n");
