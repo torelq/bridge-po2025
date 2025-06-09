@@ -108,6 +108,23 @@ public class Controller {
                         labels.get(joinGameNotice.position().ordinal()).setText(joinGameNotice.position().name()
                                 + "\n" + playerNames.get(joinGameNotice.position().ordinal())
                                 + (joinGameNotice.position() == myPosition ? " (me)" : ""));
+                        try {
+                            clientMessageStream.writeMessage(new NicksRequest());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
+                if (message instanceof NicksRequest.NicksResponse nicksResponse) {
+                    Platform.runLater(() -> {
+                        for (Player.Position pos : Player.Position.values()) {
+                            if (nicksResponse.nicks().get(pos) != null) {
+                                playerNames.set(pos.ordinal(), nicksResponse.nicks().get(pos));
+                                labels.get(pos.ordinal()).setText(pos.name()
+                                        + "\n" + playerNames.get(pos.ordinal())
+                                        + (pos == myPosition ? " (me)" : ""));
+                            }
+                        }
                     });
                 }
                 /* MAKING BID */
@@ -302,7 +319,7 @@ public class Controller {
                 labels.get(i).setStyle("-fx-font-size: 16; -fx-font-weight: bold");
             }
             else
-                labels.get(i).setStyle("-fx-font-weight: normal; -fx-font-size: 12");
+                labels.get(i).setStyle("-fx-font-weight: normal; -fx-font-size: 14");
         }
     }
 

@@ -33,7 +33,11 @@ public class PlayingView extends BorderPane {
 
         Button debugButton = new Button("MAGIC");
         debugButton.setOnAction(controller::onDebugButtonClicked);
-        VBox rightvbox = new VBox(10, scoreBoard, debugButton, controller.inforamtionRightLabel);
+        VBox rightvbox;
+        if (debugMode)
+            rightvbox = new VBox(10, scoreBoard, debugButton, controller.inforamtionRightLabel);
+        else
+            rightvbox = new VBox(10, scoreBoard, controller.inforamtionRightLabel);
         rightvbox.setAlignment(Pos.CENTER);
 
         /* ADDING ALL CARDS TO DECK */
