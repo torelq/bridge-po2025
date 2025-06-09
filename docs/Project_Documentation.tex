@@ -20,6 +20,10 @@
 \begin{document}
 \maketitle
 
+\section{Opis}
+
+Program pozwala czterem użytkownikom na grę w brydża przez LAN. Program obsługuje licytację i liczenie punktów z wielu partii. Program posiada \enquote{debug mode}, ułatwiający demonstrację/debugging.
+
 \section{Ogólna architektura}
 
 Projekt zrealizowaliśmy w architekturze MVC.\\
@@ -90,7 +94,9 @@ Testy serwera to nie testy jednostkowe, a małe programy, które pomogły przy d
 
 \subsection{Napotkane trudności}
 
-Jedynym naprawdę trudnym bugiem był problem z serializacją obietu \ch{Game}. Obiekt \ch{Player} rozszerzał \ch{Hand} i implementował \ch{Serializable}, ale \ch{Hand} nie implementowało \ch{Serializable}, przez co nie przesyłał się stan ręki.
+Trudnym bugiem był problem z serializacją obietu \ch{Game}. Obiekt \ch{Player} rozszerzał \ch{Hand} i implementował \ch{Serializable}, ale \ch{Hand} nie implementowało \ch{Serializable}, przez co nie przesyłał się stan ręki.\\
+
+Oprócz tego, problem sprawiało rozspójnianie stanu.
 
 \subsection{Przemyślenia dot. architektury}
 
