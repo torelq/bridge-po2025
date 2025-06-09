@@ -39,7 +39,9 @@ public class ScoreboardView extends TableView<ScoreboardView.ScoringSimpleString
         ObservableList<ScoringSimpleString> scoringObservableList = FXCollections.observableArrayList();
         if (scoringEntryList != null) {
             for (Scoring.ScoringEntry scoringEntry : scoringEntryList) {
-                scoringObservableList.add(new ScoringSimpleString(scoringEntry.getContract().toString(), scoringEntry.getNS(), scoringEntry.getEW()));
+                scoringObservableList.add(new ScoringSimpleString(
+                        scoringEntry.getContract().toString() + "; Won tricks: " + scoringEntry.getWonTricks(),
+                        scoringEntry.getNS(), scoringEntry.getEW()));
             }
         }
 
@@ -52,5 +54,6 @@ public class ScoreboardView extends TableView<ScoreboardView.ScoringSimpleString
 
         this.getColumns().addAll(contractColumn, nsColumn, ewColumn);
         this.setItems(scoringObservableList);
+        this.setStyle("-fx-font-size: 15");
     }
 }

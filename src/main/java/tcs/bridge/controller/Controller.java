@@ -61,6 +61,7 @@ public class Controller {
             playersPanes.add(new StackPane());
         }
         cardImages = new HashMap<>();
+        scoringEntryList = new ArrayList<>();
     }
     /* READING MESSAGE THREAD */
     private void readerThread() {
@@ -71,24 +72,39 @@ public class Controller {
 
                 /* GETTING GAME STATE FROM SERVER */
                 if (message instanceof StateRequest.StateResponse stateResponse) {
-                    myPosition = stateResponse.myPosition();
-                    if (myPosition != null)
-                        Platform.runLater(() -> {
-                            labels.get(myPosition.ordinal()).setText(myPosition.name()
-                                    + "\n" + playerNames.get(myPosition.ordinal())
-                                    + " (me)");
-                        });
-                    game = stateResponse.game(); // proper deep copy
-                    switch (game.getState()){
-                        case BIDDING -> Platform.runLater(this::startBidding);
-                        case PLAYING -> Platform.runLater(this::startPlaying);
-                        case FINISHED -> Platform.runLater(this::startFinished);
-                    }
+                    Platform.runLater(() -> {
+                        myPosition = stateResponse.myPosition();
+                        if (myPosition != null) {
+                            for (Player.Position pos : Player.Position.values()) {
+                                labels.set(pos.ordinal(), new Label(pos.name() + "\n" + playerNames.get(pos.ordinal()) + (pos == myPosition ? " (me)" : "")));
+                            }
+                        }
+
+                        game = stateResponse.game(); // proper deep copy
+
+//                        Game serverGame = stateResponse.game();
+//                        List<Hand> hands = serverGame.getDeck().deal();
+//                        game = new Game();
+//                        game.joinGame(serverGame.getPlayers().get(Player.Position.NORTH));
+//                        game.joinGame(serverGame.getPlayers().get(Player.Position.EAST));
+//                        game.joinGame(serverGame.getPlayers().get(Player.Position.SOUTH));
+//                        game.joinGame(serverGame.getPlayers().get(Player.Position.WEST));
+//                        game.setDeck(serverGame.getDeck());
+//                        game.getPlayers().get(Player.Position.NORTH).setHand(hands.get(0));
+//                        game.getPlayers().get(Player.Position.EAST).setHand(hands.get(1));
+//                        game.getPlayers().get(Player.Position.SOUTH).setHand(hands.get(2));
+//                        game.getPlayers().get(Player.Position.WEST).setHand(hands.get(3));
+                        switch (game.getState()){
+                            case BIDDING -> startBidding();
+                            case PLAYING -> startPlaying();
+                            case FINISHED -> startFinished();
+                        }
+                    });
                 }
                 /* JOIN GAME AND SETTING MY NAME AND POSITION */
                 if (message instanceof JoinGameNotice joinGameNotice){
-                    playerNames.set(joinGameNotice.position().ordinal(), joinGameNotice.name());
                     Platform.runLater(() -> {
+                        playerNames.set(joinGameNotice.position().ordinal(), joinGameNotice.name());
                         labels.get(joinGameNotice.position().ordinal()).setText(joinGameNotice.position().name()
                                 + "\n" + playerNames.get(joinGameNotice.position().ordinal())
                                 + (joinGameNotice.position() == myPosition ? " (me)" : ""));
@@ -136,24 +152,29 @@ public class Controller {
                         else {
                             System.out.println("Playing card FAILED.");
                         }
-                        if (debugMode && game.getState() == Game.State.PLAYING) onDebugButtonClicked(null);
+                        if (debugMode && game.getState() == Game.State.PLAYING)
+                            onDebugButtonClicked(null);
                     });
                 }
 
                 /* FINISH THIS */
-                if (message instanceof GameFinishedNotice){
+                if (message instanceof GameFinishedNotice gameFinishedNotice) {
                     Platform.runLater(()->{
-                        try {
-                            clientMessageStream.writeMessage(new ScoringRequest());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                        scoringEntryList.add(gameFinishedNotice.scoringEntry());
+                        startFinished();
+//                        try {
+//                            clientMessageStream.writeMessage(new ScoringRequest());
+//                        } catch (IOException e) {
+//                            throw new RuntimeException(e);
+//                        }
                     });
                 }
 
                 if (message instanceof ScoringRequest.ScoringResponse scoringResponse) {
-                    scoringEntryList = scoringResponse.scoring().getScoring();
-                    Platform.runLater(this::startFinished);
+                    Platform.runLater(()-> {
+                        scoringEntryList = scoringResponse.scoring().getScoring();
+
+                    });
                 }
 
                 /* PLAY AGAIN */
@@ -355,7 +376,7 @@ public class Controller {
     /* PLAY RANDOM CARDS TO DEBUG */
     public void onDebugButtonClicked(ActionEvent event) {
         try {
-            Thread.sleep(700);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -415,11 +436,6 @@ public class Controller {
         stage.show();
         table.getChildren().clear();
         inforamtionLeftLabel.setText(inforamtionLeftLabel.getText() + "\n" + game.getContract().getDeclarer().name());
-//        try {
-//            clientMessageStream.writeMessage(new StateRequest());
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     public void startFinished(){
