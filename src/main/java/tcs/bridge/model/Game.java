@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import tcs.bridge.model.Bidding.Bid;
 import tcs.bridge.model.Player.Position;
@@ -21,7 +22,7 @@ public class Game implements Serializable {
     }
 
     private State state = State.PREGAME;
-    private Position dealer;
+    private static final Position dealer = Position.values()[new Random().nextInt(4)];
 
     /*  DEALING THE DECK */
     private Deck deck;
@@ -53,14 +54,11 @@ public class Game implements Serializable {
             logs.append("Player ").append(player.toString()).append(" tried to join game\n");
             throw new IllegalArgumentException("Position already occupied");
         }
-        if (players.isEmpty()) {
-            dealer = position; // first to join is dealer
-            turn = dealer; // first to join is dealer
-        }
         players.put(position, player);
         if (players.size() == 4) {
             logs.append("Game is full, starting bidding\n");
             state = State.BIDDING;
+            turn = dealer;
             dealCardsToPlayers();
             for (Map.Entry<Position, Player> x : players.entrySet()) {
                 logs.append(x.getValue().toString()).append("\n");
