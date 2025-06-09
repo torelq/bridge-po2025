@@ -162,12 +162,14 @@ public class Server {
 
         void handlePlayCardRequest(Client client, PlayCardRequest playCardRequest) {
             if (game.getState()==Game.State.PLAYING) {
-                if (game.playCard(playCardRequest.card())) {
-                    client.clientHandler.writeMessage(new PlayCardRequest.AcceptResponse());
-                    sendAll(new PlayCardNotice(playCardRequest.position(), playCardRequest.card()));
+                if (playCardRequest.position()==game.getCurrentTurn()) {
+                    if (game.playCard(playCardRequest.card())) {
+                        client.clientHandler.writeMessage(new PlayCardRequest.AcceptResponse());
+                        sendAll(new PlayCardNotice(playCardRequest.position(), playCardRequest.card()));
 
-                    if (game.getState() == Game.State.FINISHED) gameFinished();
-                    return;
+                        if (game.getState() == Game.State.FINISHED) gameFinished();
+                        return;
+                    }
                 }
             }
             client.clientHandler.writeMessage(new RejectResponse());
