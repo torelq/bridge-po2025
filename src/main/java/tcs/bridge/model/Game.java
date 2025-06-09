@@ -22,7 +22,7 @@ public class Game implements Serializable {
     }
 
     private State state = State.PREGAME;
-    private static final Position dealer = Position.values()[new Random().nextInt(4)];
+    private Position dealer = Position.values()[new Random().nextInt(4)];
 
     /*  DEALING THE DECK */
     private Deck deck;
