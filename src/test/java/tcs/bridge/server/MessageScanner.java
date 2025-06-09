@@ -43,6 +43,9 @@ class MessageScanner {
             case "sr" -> {
                 return new StateRequest();
             }
+            case "ngr" -> {
+                return new NewGameRequest();
+            }
         }
         System.out.println("Invalid command.");
         return scanMessage();
